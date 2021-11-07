@@ -8,7 +8,7 @@ class NodeType(Enum):
     NON_ITEM = 'folder'
     ITEM = 'file'
 
-class WarehousesService:
+class TreeService:
     def __init__(self, name: str, repoPath: str) -> None:
         def mkdir(path: str, name: str) -> None:
             fullPath = f"{path}/{name}"
