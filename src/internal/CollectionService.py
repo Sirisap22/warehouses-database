@@ -273,7 +273,7 @@ class CollectionService:
         buffer = []
         chachedData = []
         pool = Pool(processes = self.config["threadSize"] if self.config["jsonAvailable"].size() > self.config["threadSize"] else self.config["jsonAvailable"].size() if self.config["jsonAvailable"].size() != 0 else 1)  
-        jsonBin = self.config["allJson"].keys() if tag is None else self.config["tag"][tag]
+        jsonBin = self.config["allJson"].keys() if tag is None else list(self.config["tag"][tag].keys())
         for jsonName in jsonBin:
             # print(jsonName)
             if self.config["allJson"][jsonName] == 0:
