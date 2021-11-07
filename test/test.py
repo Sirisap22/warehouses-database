@@ -1,5 +1,5 @@
-from tree import NavigateTree
-from tree import *
+# from src.internal.tree import NavigateTree
+from src.internal.tree import *
 
 t = NavigateTree()
 

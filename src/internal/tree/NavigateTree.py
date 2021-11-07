@@ -1,7 +1,8 @@
 from __future__ import annotations
 from typing import TypedDict, Type
+from re import search
 
-from archives.warehouses import TreeNode
+from .TreeNode import TreeNode
 from .FileNode import FileNode
 from .FolderNode import FolderNode
 
@@ -24,6 +25,25 @@ class NavigateTree():
             return destinationNode
         except:
             return None
+    
+    def searchChildren(self, path: list[str], pattern: str) -> dict[str, str] | None: 
+        destinationNode = self.traverse(path)
+        if destinationNode is None or not isinstance(destinationNode, FolderNode):
+            return None
+
+        result = {}
+        for key, value in destinationNode.children.items():
+            if search(pattern, key) is not None:
+                result[key] = value['data']
+        
+        return result
+
+    
+    def searchAllSubChildren(self, path: list[str], pattern: str) -> Type[TreeNode] | None: 
+        destinationNode = self.traverse(path)
+        if destinationNode is None or not isinstance(destinationNode, FolderNode):
+            return None
+        pass
 
     def insertFolderNode(self, path: list[str], metaData: MetaData) -> bool:
         destinationNode = self.traverse(path)
@@ -32,7 +52,16 @@ class NavigateTree():
         folderName, id = metaData['name'], metaData['id']
         destinationNode.children[folderName] = FolderNode(id)
         return True
-        
+
+    def insertMultipleFolderNodeInSameFolderNode(self, path: list[str], metaDataList: list[MetaData]) -> bool:
+        destinationNode = self.traverse(path)
+        if destinationNode is None or not isinstance(destinationNode, FolderNode):
+            return False
+        for metaData in metaDataList:
+            folderName, id = metaData['name'], metaData['id']
+            destinationNode.children[folderName] = FolderNode(id)
+        return True
+
     def insertFileNode(self, path: list[str], metaData: MetaData) -> bool:
         destinationNode = self.traverse(path)
         if destinationNode is None or not isinstance(destinationNode, FolderNode):
