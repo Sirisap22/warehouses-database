@@ -102,6 +102,7 @@ class CollectionService:
                 "CacheLength" : CacheLength,
                 "jsonAvailable" : Stack(),
                 "allJson" : {},
+                "tag" : {}
                 }
             self.saveConfig()
         self.whereCache = {}
@@ -130,6 +131,7 @@ class CollectionService:
         p = f"_{name}.cnfg"
         f = open(f"{self.collectionPath()}/{p}", "w")
         self.config["jsonAvailable"] = self.config["jsonAvailable"].items
+        self.config["tag"]
         f.write(json.dumps(self.config))
         f.close()
         self.config["jsonAvailable"] = Stack(self.config["jsonAvailable"])
@@ -171,6 +173,13 @@ class CollectionService:
         f = open(f"{self.collectionPath()}/{jsonName}.json", "w+")
         f.write(json.dumps(data))
         f.close()
+        if tag is not None:
+            if tag in self.config["tag"]:
+                self.config["tag"][tag][jsonName] = True
+            else:
+                self.config["tag"][tag] = {jsonName: True}
+        print("saving")
+        self.saveConfig()
         # for cacheID in list(self.whereCache.keys()):
 
         #     jName = cacheID.split("-")[-1]
@@ -216,13 +225,13 @@ class CollectionService:
         ID = str(uuid.uuid1())+f"_{jsonName}"
         jsonData[ID] = data
         jsonData[ID]["ID"] = ID
-        self.saveJson(jsonName, jsonData)
+        self.saveJson(jsonName, jsonData, tag=tag)
         self.config["allJson"][jsonName] += 1
         if self.config["allJson"][jsonName] >= self.config["jsonSize"]:
             self.config["jsonAvailable"].pop()
         self.saveConfig()
         return ID
-    def searchThread(self, jsonName, Json, operator, column, value):
+    def searchThread(self, jsonName, Json, operator, column, value, tag=None):
         Bin = []
         if operator == "==":
             for docID in Json.keys():
@@ -255,13 +264,17 @@ class CollectionService:
         elif operator == "#":
             for docID in Json.keys():
                     Bin.append(Json[docID])
+        if tag is not None and len(Bin) == 0:
+            self.config["tag"][tag].remove(jsonName)
+            self.saveConfig()
         return Bin, jsonName
-    def where(self, column, operator, value):           
+    def where(self, column, operator, value, tag=None):           
         res = []
         buffer = []
         chachedData = []
         pool = Pool(processes = self.config["threadSize"] if self.config["jsonAvailable"].size() > self.config["threadSize"] else self.config["jsonAvailable"].size() if self.config["jsonAvailable"].size() != 0 else 1)  
-        for jsonName in self.config["allJson"].keys():
+        jsonBin = self.config["allJson"].keys() if tag is None else self.config["tag"][tag]
+        for jsonName in jsonBin:
             # print(jsonName)
             if self.config["allJson"][jsonName] == 0:
                 continue
