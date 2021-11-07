@@ -3,7 +3,6 @@ from src.internal.tree import *
 
 t = NavigateTree()
 
-
 t.insertFolderNode([], {'name': 'test', 'id': 'test_id1'})
 t.insertFolderNode([], {'name': 'test_two', 'id': 'test_id2'})
 t.insertFolderNode([], {'name': 'test_five', 'id': 'test_id3'})
