@@ -10,6 +10,7 @@ class Student(BaseModel):
     years: int
 
 
+
 app = FastAPI()
 db = CollectionService("apitest", "D:", jsonSize=100, threadSize=60, CacheLength=10000)
 
@@ -43,7 +44,7 @@ async def getByYears(years: int):
 
 @app.get("/student/name/{name}/{tag}")
 async def getByName(name: str, tag: str):
-    return db.where("name", "==", name, tag=tag)
+    return db.where("name", "==", name, tags=[tag])
 
 @app.get("/student/ageOver/{years}")
 async def getByYears(years: int):
@@ -65,9 +66,14 @@ async def getByYears(years: int):
 async def getByYears(years: int):
     return len(db.where("years", "==", years))
 
+@app.get("/student/tag/{tag}")
+async def register(tag: str):
+    data = db.where("ID", "#", True, tags=tag.split("-"))
+    return data
+
 @app.post("/student/tag/{tag}")
 async def register(student: Student, tag: str):
-    db.addDoc(student.dict(), tag=tag)
+    db.addDoc(student.dict(), tags=tag.split("-"))
     print(student)
     return 200
 
