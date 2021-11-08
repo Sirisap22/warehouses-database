@@ -237,31 +237,31 @@ class CollectionService:
         Bin = []
         if operator == "==":
             for docID in Json.keys():
-                if Json[docID][column] == value and all(tag in Json[docID]["tags"] for tag in tags):
+                if Json[docID][column] == value and (all(tag in Json[docID]["tags"] for tag in tags) or tags == {None}):
                     Bin.append(Json[docID])
         elif operator == ">=":
             for docID in Json.keys():
-                if Json[docID][column] >= value and all(tag in Json[docID]["tags"] for tag in tags):
+                if Json[docID][column] >= value and (all(tag in Json[docID]["tags"] for tag in tags) or tags == {None}):
                     Bin.append(Json[docID])
         elif operator == "<=":
             for docID in Json.keys():
-                if Json[docID][column] <= value and all(tag in Json[docID]["tags"] for tag in tags):
+                if Json[docID][column] <= value and (all(tag in Json[docID]["tags"] for tag in tags) or tags == {None}):
                     Bin.append(Json[docID])
         elif operator == ">":
             for docID in Json.keys():
-                if Json[docID][column] > value and all(tag in Json[docID]["tags"] for tag in tags):
+                if Json[docID][column] > value and (all(tag in Json[docID]["tags"] for tag in tags) or tags == {None}):
                     Bin.append(Json[docID])
         elif operator == "<":
             for docID in Json.keys():
-                if Json[docID][column] < value and all(tag in Json[docID]["tags"] for tag in tags):
+                if Json[docID][column] < value and (all(tag in Json[docID]["tags"] for tag in tags) or tags == {None}):
                     Bin.append(Json[docID])
         elif operator == "!=":
             for docID in Json.keys():
-                if Json[docID][column] != value and all(tag in Json[docID]["tags"] for tag in tags):
+                if Json[docID][column] != value and (all(tag in Json[docID]["tags"] for tag in tags) or tags == {None}):
                     Bin.append(Json[docID])
         elif operator == "contain":
             for docID in Json.keys():
-                if value in Json[docID][column] and all(tag in Json[docID]["tags"] for tag in tags):
+                if value in Json[docID][column] and (all(tag in Json[docID]["tags"] for tag in tags) or tags == {None}):
                     Bin.append(Json[docID])
         elif operator == "#":
             for docID in Json.keys():

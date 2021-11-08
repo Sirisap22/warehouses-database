@@ -42,9 +42,13 @@ async def student():
 async def getByYears(years: int):
     return db.where("years", "==", years)
 
+@app.get("/student/name/{name}")
+async def getByName(name: str):
+    return db.where("name", "==", name)
+
 @app.get("/student/name/{name}/{tag}")
 async def getByName(name: str, tag: str):
-    return db.where("name", "==", name, tags=[tag])
+    return db.where("name", "==", name, tags=tag.split("-"))
 
 @app.get("/student/ageOver/{years}")
 async def getByYears(years: int):
