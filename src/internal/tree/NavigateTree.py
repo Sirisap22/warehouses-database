@@ -17,7 +17,10 @@ class NavigateTree():
     def jsonable(self):
         return self.__dict__
     
-    def traverse(self, path: list[str]) -> Type[TreeNode] | None: 
+    def traverse(self, path: list[str]) -> Type[TreeNode] | None:
+        if path[0] == '':
+            return self.root
+
         try:
             destinationNode = self.root
             for step in path:

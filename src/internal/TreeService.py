@@ -2,7 +2,7 @@ import os
 import pickle
 import json
 from enum import Enum
-from tree import NavigateTree, MetaData
+from .tree import NavigateTree, MetaData
 
 class NodeType(Enum):
     NON_ITEM = 'folder'
@@ -10,8 +10,10 @@ class NodeType(Enum):
 
 class TreeService:
     def __init__(self, name: str, repoPath: str) -> None:
-        def mkdir(path: str, name: str) -> None:
-            fullPath = f"{path}/{name}"
+        self.navigationTree = None
+
+        def mkdir(path: str) -> None:
+            fullPath = f"{path}"
             if os.path.exists(fullPath):
                 return
             else:
@@ -22,9 +24,9 @@ class TreeService:
         
         configFileName = f"_{name}.cnfg"
         if isExist(repoPath, configFileName):
-            self.config = json.loads(open(f"{repoPath}/{name}/{configFileName}", "r").read())
+            self.config = json.loads(open(f"{repoPath}/{configFileName}", "r").read())
         else:
-            mkdir(repoPath, configFileName)
+            mkdir(repoPath)
             self.config = {
                 "name" : name,
                 "path" : repoPath,
@@ -40,7 +42,7 @@ class TreeService:
     def saveConfig(self) -> None:
         name = self.config["name"]
         p = f"_{name}.cnfg"
-        with open(f"{self.objectPath()}/{p}", "w") as f:
+        with open(f"{self.config['path']}/{p}", "w") as f:
             f.write(json.dumps(self.config))
 
     def doConfig(self, param: str, val: str | int) -> None:
@@ -57,11 +59,11 @@ class TreeService:
         self.saveObject()
     
     def loadObject(self) -> None:
-        with open(self.objectPath, "rb") as f:
+        with open(self.objectPath(), "rb") as f:
             self.navigationTree = pickle.load(f)
 
     def saveObject(self) -> None:
-        with open(self.objectPath, "wb") as f:
+        with open(self.objectPath(), "wb") as f:
             pickle.dump(self.navigationTree, f)
 
     def insert(self, type: NodeType, path: str, metaData: MetaData) -> bool:
