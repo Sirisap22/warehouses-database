@@ -169,15 +169,16 @@ class CollectionService:
         self.jsonValid[cacheID] = True
         return data
         
-    def saveJson(self, jsonName, data, tag=None):
+    def saveJson(self, jsonName, data, tags=None):
         f = open(f"{self.collectionPath()}/{jsonName}.json", "w+")
         f.write(json.dumps(data))
         f.close()
-        if tag is not None:
-            if tag in self.config["tag"]:
-                self.config["tag"][tag][jsonName] = True
-            else:
-                self.config["tag"][tag] = {jsonName: True}
+        if tags is not None:
+            for tag in tags:
+                if tag in self.config["tag"]:
+                    self.config["tag"][tag][jsonName] = True
+                else:
+                    self.config["tag"][tag] = {jsonName: True}
         print("saving")
         self.saveConfig()
         # for cacheID in list(self.whereCache.keys()):
@@ -220,60 +221,78 @@ class CollectionService:
             for docID in Json.keys():
                 res[jsonName] = {"docID" : docID, "Data":Json[docID]}
         return res
-    def addDoc(self, data, tag=None):
+    def addDoc(self, data, tags=[None]):
         jsonName, jsonData = self.getJson()
         ID = str(uuid.uuid1())+f"_{jsonName}"
         jsonData[ID] = data
         jsonData[ID]["ID"] = ID
-        self.saveJson(jsonName, jsonData, tag=tag)
+        jsonData[ID]["tags"] = dict.fromkeys(tags, True)
+        self.saveJson(jsonName, jsonData, tags=tags)
         self.config["allJson"][jsonName] += 1
         if self.config["allJson"][jsonName] >= self.config["jsonSize"]:
             self.config["jsonAvailable"].pop()
         self.saveConfig()
         return ID
-    def searchThread(self, jsonName, Json, operator, column, value, tag=None):
+    def searchThread(self, jsonName, Json, operator, column, value, tags):
         Bin = []
         if operator == "==":
             for docID in Json.keys():
-                if Json[docID][column] == value:
+                if Json[docID][column] == value and (all(tag in Json[docID]["tags"] for tag in tags) or tags == {None}):
                     Bin.append(Json[docID])
         elif operator == ">=":
             for docID in Json.keys():
-                if Json[docID][column] >= value:
+                if Json[docID][column] >= value and (all(tag in Json[docID]["tags"] for tag in tags) or tags == {None}):
                     Bin.append(Json[docID])
         elif operator == "<=":
             for docID in Json.keys():
-                if Json[docID][column] <= value:
+                if Json[docID][column] <= value and (all(tag in Json[docID]["tags"] for tag in tags) or tags == {None}):
                     Bin.append(Json[docID])
         elif operator == ">":
             for docID in Json.keys():
-                if Json[docID][column] > value:
+                if Json[docID][column] > value and (all(tag in Json[docID]["tags"] for tag in tags) or tags == {None}):
                     Bin.append(Json[docID])
         elif operator == "<":
             for docID in Json.keys():
-                if Json[docID][column] < value:
+                if Json[docID][column] < value and (all(tag in Json[docID]["tags"] for tag in tags) or tags == {None}):
                     Bin.append(Json[docID])
         elif operator == "!=":
             for docID in Json.keys():
-                if Json[docID][column] != value:
+                if Json[docID][column] != value and (all(tag in Json[docID]["tags"] for tag in tags) or tags == {None}):
                     Bin.append(Json[docID])
         elif operator == "contain":
             for docID in Json.keys():
-                if value in Json[docID][column]:
+                if value in Json[docID][column] and (all(tag in Json[docID]["tags"] for tag in tags) or tags == {None}):
                     Bin.append(Json[docID])
         elif operator == "#":
             for docID in Json.keys():
+                if all(tag in Json[docID]["tags"] for tag in tags) or tags == {None}:
                     Bin.append(Json[docID])
-        if tag is not None and len(Bin) == 0:
-            self.config["tag"][tag].remove(jsonName)
-            self.saveConfig()
+        for tag in tags:
+            if tag is not None and len(Bin) == 0:
+                del self.config["tag"][tag][jsonName]
+                if len(self.config["tag"][tag]) == 0:
+                    del self.config["tag"][tag]
+                self.saveConfig()
         return Bin, jsonName
-    def where(self, column, operator, value, tag=None):           
+    def where(self, column, operator, value, tags={None}):
+        def getJsons(tags):
+            print("---")
+            if len(set(tags).intersection(set(self.config["tag"]))) != len(tags):
+                return f"Tags {tags} is invalid"
+            buffer = set(self.config["tag"][tags[0]])
+            for tag in tags[1:]:
+                buffer = buffer.intersection(set(self.config["tag"][tag].keys()))
+            print(f"set : {buffer}, len : {len(buffer)}")
+            return buffer
         res = []
         buffer = []
         chachedData = []
         pool = Pool(processes = self.config["threadSize"] if self.config["jsonAvailable"].size() > self.config["threadSize"] else self.config["jsonAvailable"].size() if self.config["jsonAvailable"].size() != 0 else 1)  
-        jsonBin = self.config["allJson"].keys() if tag is None else list(self.config["tag"][tag].keys())
+        jsonBin = self.config["allJson"].keys() if tags == {None} else getJsons(tags)
+        print(jsonBin)
+        if type(jsonBin) == str:
+            return jsonBin
+        # list(self.config["tag"][tag].keys())
         for jsonName in jsonBin:
             # print(jsonName)
             if self.config["allJson"][jsonName] == 0:
@@ -287,7 +306,7 @@ class CollectionService:
             #     chachedData.append(self.whereCache[cacheID])
             #     continue
             Json = self.loadJson(jsonName)
-            buffer.append(pool.apply_async(self.searchThread, [jsonName, Json, operator, column, value]))
+            buffer.append(pool.apply_async(self.searchThread, [jsonName, Json, operator, column, value, tags]))
             # t = multiprocessing.Process(target=self.searchThread, args=(Json, res, operator, column, value))
             # t.start()
             # threads.append(t)
