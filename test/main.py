@@ -38,6 +38,10 @@ async def student(id: str):
 async def student():
     return len(db)
 
+@app.get("/student/len/{tags}")
+async def student(tags: str):
+    return len(db.where("ID","#",True, tags=tags.split("-")))
+
 @app.get("/student/{years}")
 async def getByYears(years: int):
     return db.where("years", "==", years)

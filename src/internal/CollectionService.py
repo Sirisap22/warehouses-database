@@ -226,7 +226,7 @@ class CollectionService:
         ID = str(uuid.uuid1())+f"_{jsonName}"
         jsonData[ID] = data
         jsonData[ID]["ID"] = ID
-        jsonData[ID]["tags"] = tags
+        jsonData[ID]["tags"] = dict.fromkeys(tags, True)
         self.saveJson(jsonName, jsonData, tags=tags)
         self.config["allJson"][jsonName] += 1
         if self.config["allJson"][jsonName] >= self.config["jsonSize"]:
@@ -282,7 +282,7 @@ class CollectionService:
             buffer = set(self.config["tag"][tags[0]])
             for tag in tags[1:]:
                 buffer = buffer.intersection(set(self.config["tag"][tag].keys()))
-            print(f"set : {buffer}")
+            print(f"set : {buffer}, len : {len(buffer)}")
             return buffer
         res = []
         buffer = []
