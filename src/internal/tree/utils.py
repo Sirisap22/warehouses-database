@@ -1,8 +1,15 @@
+from typing import Type
+from collections import deque
+import json
+
 from .FolderNode import FolderNode
 from .NavigateTree import NavigateTree
 from .TreeNode import TreeNode
-from typing import Type
-import json
+from ..linked_structures import Queue
+
+def breathFirstSearch(root: FolderNode, depth: int):
+    queue = Queue()
+    pass
 
 def printNavigateTreeByDepth(tree: NavigateTree) -> None:
     print('[\'root\']')

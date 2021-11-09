@@ -2,10 +2,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 from dotenv import dotenv_values
-from pydantic import BaseModel
 import uvicorn
 
 from .internal import TreeService, NodeType, treeToJSON
+from .models.search import InsertPath
 
 config = dotenv_values('.env.dev')
 
@@ -29,10 +29,6 @@ def shutdown_event():
 @app.get("/warehouse", tags=["search"])
 async def getHome():
     return Response(media_type="application/json", content=treeToJSON(treeService.navigationTree.root))
-
-class InsertPath(BaseModel):
-    path: str
-    name: str
 
 @app.post("/path", tags=["search"])
 async def insertPath(insertPath: InsertPath):

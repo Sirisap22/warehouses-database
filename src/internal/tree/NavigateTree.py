@@ -1,16 +1,19 @@
 from __future__ import annotations
 from typing import TypedDict, Type
+from dotenv import dotenv_values
 from re import search
 
 from .TreeNode import TreeNode
 from .FileNode import FileNode
 from .FolderNode import FolderNode
 
+config = dotenv_values(".env.dev")
+
 class MetaData(TypedDict):
     name: str
     id: str
 
-class NavigateTree():
+class NavigateTree:
     def __init__(self):
         self.root = FolderNode('root')
 
@@ -53,7 +56,7 @@ class NavigateTree():
         if destinationNode is None or not isinstance(destinationNode, FolderNode):
             return False
         folderName, id = metaData['name'], metaData['id']
-        destinationNode.children[folderName] = FolderNode(id)
+        destinationNode.children[folderName] = FolderNode(f"{folderName}{config['NAME_ID_FLAG']}{id}")
         return True
 
     def insertMultipleFolderNodeInSameFolderNode(self, path: list[str], metaDataList: list[MetaData]) -> bool:
@@ -62,7 +65,7 @@ class NavigateTree():
             return False
         for metaData in metaDataList:
             folderName, id = metaData['name'], metaData['id']
-            destinationNode.children[folderName] = FolderNode(id)
+            destinationNode.children[folderName] = FolderNode(f"{folderName}{config['NAME_ID_FLAG']}{id}")
         return True
 
     def insertFileNode(self, path: list[str], metaData: MetaData) -> bool:
@@ -70,7 +73,7 @@ class NavigateTree():
         if destinationNode is None or not isinstance(destinationNode, FolderNode):
             return False
         fileName, id = metaData['name'], metaData['id']
-        destinationNode.children[fileName] = FileNode(id)
+        destinationNode.children[fileName] = FileNode(f"{fileName}{config['NAME_ID_FLAG']}{id}")
         return True
 
     def insertMultipleFileNodeInSameFolderNode(self, path: list[str], metaDataList: list[MetaData]) -> bool:
@@ -79,7 +82,7 @@ class NavigateTree():
             return False
         for metaData in metaDataList:
             fileName, id = metaData['name'], metaData['id']
-            destinationNode.children[fileName] = FileNode(id)
+            destinationNode.children[fileName] = FileNode(f"{fileName}{config['NAME_ID_FLAG']}{id}")
         return True
 
     def deleteFileNode(self, path: list[str], deleteFileName: str) -> bool:
