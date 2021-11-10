@@ -1,11 +1,13 @@
 from __future__ import annotations
 from typing import TypedDict, Type
 from dotenv import dotenv_values
+from collections import defaultdict
 from re import search
 
 from .TreeNode import TreeNode
 from .FileNode import FileNode
 from .FolderNode import FolderNode
+from .NodeType import NodeType
 
 config = dotenv_values(".env.dev")
 
@@ -16,9 +18,31 @@ class MetaData(TypedDict):
 class NavigateTree:
     def __init__(self):
         self.root = FolderNode('root')
+        self.itemsCount = defaultdict(lambda: 0)
 
     def jsonable(self):
         return self.__dict__
+
+    def updateItemsCount(self, path: list[str], count: int) -> None:
+            curPath = ''
+            self.itemsCount['root'] += count
+            for step in path:
+                if curPath == '':
+                    curPath = '/'.join([step])
+                else:
+                    curPath = '/'.join([curPath, step])
+                self.itemsCount[curPath] += count
+
+
+    def deleteItemsCount(self, path: list[str]) -> None:
+        path = '/'.join(path)
+        toDeleteKeys = []
+        for key in self.itemsCount.keys():
+            if key.startswith(path):
+               toDeleteKeys.append(key)
+
+        for key in toDeleteKeys:
+            del self.itemsCount[key]
     
     def traverse(self, path: list[str]) -> Type[TreeNode] | None:
         if path[0] == '':
@@ -72,6 +96,7 @@ class NavigateTree:
         destinationNode = self.traverse(path)
         if destinationNode is None or not isinstance(destinationNode, FolderNode):
             return False
+        self.updateItemsCount(path, 1)
         fileName, id = metaData['name'], metaData['id']
         destinationNode.children[fileName] = FileNode(f"{fileName}{config['NAME_ID_FLAG']}{id}")
         return True
@@ -80,37 +105,53 @@ class NavigateTree:
         destinationNode = self.traverse(path)
         if destinationNode is None or not isinstance(destinationNode, FolderNode):
             return False
+        self.updateItemsCount(path, len(metaDataList))
         for metaData in metaDataList:
             fileName, id = metaData['name'], metaData['id']
             destinationNode.children[fileName] = FileNode(f"{fileName}{config['NAME_ID_FLAG']}{id}")
         return True
 
     def deleteFileNode(self, path: list[str], deleteFileName: str) -> bool:
-        return self.deleteNode(path, deleteFileName)
+        return self.deleteNode(NodeType.ITEM, path, deleteFileName)
 
     def deleteMultipleFileNodeInSameFolderNode(self, path: list[str], deleteFileNameList: list[str]) -> bool:
-        return self.deleteMultipleNodeInSameFolderNode(path, deleteFileNameList)
+        return self.deleteMultipleNodeInSameFolderNode(NodeType.ITEM, path, deleteFileNameList)
 
     def deleteFolderNode(self, path: list[str], deleteFolderName: str) -> bool:
-        return self.deleteNode(path, deleteFolderName)
+        return self.deleteNode(NodeType.NON_ITEM, path, deleteFolderName)
 
     def deleteMultipleFolderNodeInSameFolderNode(self, path: list[str], deleteFolderNameList: list[str]) -> bool:
-        return self.deleteNode(path, deleteFolderNameList)
+        return self.deleteNode(NodeType.NON_ITEM, path, deleteFolderNameList)
 
-    def deleteNode(self, path: list[str], deleteName: str) -> bool:
+    def deleteNode(self, nodeType: NodeType, path: list[str], deleteName: str) -> bool:
         destinationNode = self.traverse(path)
         if destinationNode is None or not isinstance(destinationNode, FolderNode):
             return False
+
+        if nodeType == NodeType.ITEM:
+            self.updateItemsCount(path, -1)
+        elif nodeType == NodeType.NON_ITEM:
+            self.updateItemsCount(path, -self.itemsCount['/'.join(path + [deleteName])])
+            self.deleteItemsCount(path + [deleteName])
+
         try:
             del destinationNode.children[deleteName]
             return True
         except KeyError:
             return False
         
-    def deleteMultipleNodeInSameFolderNode(self, path: list[str], deleteNameList: list[str]) -> bool:
+    def deleteMultipleNodeInSameFolderNode(self,nodeType: NodeType, path: list[str], deleteNameList: list[str]) -> bool:
         destinationNode = self.traverse(path)
         if destinationNode is None or not isinstance(destinationNode, FolderNode):
             return False
+
+        if nodeType == NodeType.ITEM:
+            self.updateItemsCount(path, -len(deleteNameList))
+        elif nodeType == NodeType.NON_ITEM:
+            for deleteName in deleteNameList:
+                self.updateItemsCount(path, -self.itemsCount['/'.join(path + [deleteName])])
+                self.deleteItemsCount(path + [deleteName])
+
         try:
             for deleteName in deleteNameList:
                 del destinationNode.children[deleteName]

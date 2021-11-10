@@ -14,6 +14,9 @@ class Stack(Generic[T]):
     def __str__(self) -> str:
         return str(self.store)
 
+    def isEmpty(self) -> bool:
+        return len(self.store) == 0
+
     def peek(self) -> T:
         return self.store[-1]
 

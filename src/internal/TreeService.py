@@ -1,12 +1,9 @@
 import os
 import pickle
 import json
-from enum import Enum
-from .tree import NavigateTree, MetaData
 
-class NodeType(Enum):
-    NON_ITEM = 'folder'
-    ITEM = 'file'
+from .tree import NavigateTree, MetaData, NodeType
+
 
 class TreeService:
     def __init__(self, name: str, repoPath: str) -> None:

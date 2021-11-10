@@ -1,15 +1,49 @@
-from typing import Type
-from collections import deque
+from typing import Type, Any, Type
+from dotenv import dotenv_values
 import json
 
+from .TreeNode import TreeNode
 from .FolderNode import FolderNode
 from .NavigateTree import NavigateTree
 from .TreeNode import TreeNode
 from ..linked_structures import Queue
 
-def breathFirstSearch(root: FolderNode, depth: int):
-    queue = Queue()
-    pass
+config = dotenv_values('.env.dev')
+
+def breathFirstSearchLimit(root: FolderNode, maxDepth: int = 1):
+    if maxDepth > 2:
+        return {}
+    curDepth = 0
+
+    search = {}
+    queue = Queue([(root, search)])
+    depthTrack = [1]
+    d_idx = 0
+    while not queue.isEmpty() and curDepth < maxDepth:
+        curRoot, curSearch = queue.deque()
+        if curRoot is None:
+            continue
+
+        if curRoot.children is not None:
+            if len(depthTrack) <= d_idx+1:
+                depthTrack.append(0)
+            depthTrack[d_idx+1] += len(curRoot.children.keys())
+
+        for _, child in curRoot.children.items():
+            name, id = child.data.split(config['NAME_ID_FLAG'])
+
+            if isinstance(child, FolderNode):
+                curSearch[name] = {}
+                queue.enqueue((child, curSearch[name]))
+            else:
+                curSearch[name] = None
+
+        depthTrack[d_idx] -= 1
+        if depthTrack[d_idx] == 0:
+            d_idx += 1
+            curDepth += 1
+
+    return search
 
 def printNavigateTreeByDepth(tree: NavigateTree) -> None:
     print('[\'root\']')
