@@ -4,7 +4,7 @@ from fastapi.responses import Response
 from dotenv import dotenv_values
 import uvicorn
 
-from .internal import TreeService, NodeType, treeToJSON
+from .internal import TreeService, NodeType, treeToJSON, MetaData
 from .models.search import InsertPath
 
 config = dotenv_values('.env.dev')
@@ -26,13 +26,26 @@ treeService = TreeService("tree", f"{config['TREE_PATH']}")
 def shutdown_event():
     treeService.saveObject()
 
-@app.get("/warehouse", tags=["search"])
+@app.get("/", tags=["search"])
 async def getHome():
     return Response(media_type="application/json", content=treeToJSON(treeService.navigationTree.root))
+
+@app.get("/warehouse", tags=["search"])
+async def getWarehouse():
+    return treeService.getWarehouses()
+
+@app.get("/warehouse/{warehouseName}/zone/{zoneName}", tags=["search"])
+async def getShelfs(warehouseName: str, zoneName: str):
+    return treeService.getShelfs(f"warehouse{warehouseName}/zone{zoneName}")
+
+@app.get("/warehouse/{warehouseName}/zone/{zoneName}/shelf/{shelfName}", tags=["search"])
+async def getItems(warehouseName: str, zoneName: str, shelfName: str):
+    return treeService.getItems(f"warehouse{warehouseName}/zone{zoneName}/shelf{shelfName}")
 
 @app.post("/path", tags=["search"])
 async def insertPath(insertPath: InsertPath):
     metaData = {
+        "type": insertPath.type,
         "name": insertPath.name,
         "id": insertPath.name,
     }

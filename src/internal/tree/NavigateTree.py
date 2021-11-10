@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TypedDict, Type
+from typing import Type
 from dotenv import dotenv_values
 from collections import defaultdict
 from re import search
@@ -8,17 +8,17 @@ from .TreeNode import TreeNode
 from .FileNode import FileNode
 from .FolderNode import FolderNode
 from .NodeType import NodeType
+from .meta import MetaData
 
 config = dotenv_values(".env.dev")
 
-class MetaData(TypedDict):
-    name: str
-    id: str
+def defaultVal():
+    return 0
 
 class NavigateTree:
     def __init__(self):
         self.root = FolderNode('root')
-        self.itemsCount = defaultdict(lambda: 0)
+        self.itemsCount = defaultdict(defaultVal)
 
     def jsonable(self):
         return self.__dict__
@@ -79,8 +79,8 @@ class NavigateTree:
         destinationNode = self.traverse(path)
         if destinationNode is None or not isinstance(destinationNode, FolderNode):
             return False
-        folderName, id = metaData['name'], metaData['id']
-        destinationNode.children[folderName] = FolderNode(f"{folderName}{config['NAME_ID_FLAG']}{id}")
+        folderName, type, id = metaData['name'], str(metaData['type']), metaData['id']
+        destinationNode.children[type+folderName] = FolderNode(f"{type}{config['FLAG']}{folderName}{config['FLAG']}{id}")
         return True
 
     def insertMultipleFolderNodeInSameFolderNode(self, path: list[str], metaDataList: list[MetaData]) -> bool:
@@ -88,8 +88,8 @@ class NavigateTree:
         if destinationNode is None or not isinstance(destinationNode, FolderNode):
             return False
         for metaData in metaDataList:
-            folderName, id = metaData['name'], metaData['id']
-            destinationNode.children[folderName] = FolderNode(f"{folderName}{config['NAME_ID_FLAG']}{id}")
+            folderName, type, id = metaData['name'], str(metaData['type']), metaData['id']
+            destinationNode.children[type+folderName] = FolderNode(f"{type}{config['FLAG']}{folderName}{config['FLAG']}{id}")
         return True
 
     def insertFileNode(self, path: list[str], metaData: MetaData) -> bool:
@@ -99,8 +99,8 @@ class NavigateTree:
 
         self.updateItemsCount(path, 1)
 
-        fileName, id = metaData['name'], metaData['id']
-        destinationNode.children[fileName] = FileNode(f"{fileName}{config['NAME_ID_FLAG']}{id}")
+        fileName, type, id = metaData['name'], str(metaData['type']), metaData['id']
+        destinationNode.children[type+fileName] = FileNode(f"{type}{config['FLAG']}{fileName}{config['FLAG']}{id}")
         return True
 
     def insertMultipleFileNodeInSameFolderNode(self, path: list[str], metaDataList: list[MetaData]) -> bool:
@@ -111,8 +111,8 @@ class NavigateTree:
         self.updateItemsCount(path, len(metaDataList))
 
         for metaData in metaDataList:
-            fileName, id = metaData['name'], metaData['id']
-            destinationNode.children[fileName] = FileNode(f"{fileName}{config['NAME_ID_FLAG']}{id}")
+            fileName, type, id = metaData['name'], str(metaData['type']), metaData['id']
+            destinationNode.children[type+fileName] = FileNode(f"{type}{config['FLAG']}{fileName}{config['FLAG']}{id}")
         return True
 
     def deleteFileNode(self, path: list[str], deleteFileName: str) -> bool:

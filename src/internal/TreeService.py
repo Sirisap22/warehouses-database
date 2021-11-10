@@ -1,9 +1,12 @@
 import os
 import pickle
 import json
+from dotenv import dotenv_values
 
-from .tree import NavigateTree, MetaData, NodeType
+from .tree import NavigateTree, MetaData, MetaType, NodeType
 
+
+config = dotenv_values(".env.dev")
 
 class TreeService:
     def __init__(self, name: str, repoPath: str) -> None:
@@ -53,6 +56,30 @@ class TreeService:
     
     def initializeObject(self) -> None:
         self.navigationTree = NavigateTree()
+        for i in range(2):
+            self.navigationTree.insertFolderNode([''],
+                                                 {
+                                                     'name': f'{i+1}',
+                                                     'id': f'{i+1}',
+                                                     'type': MetaType.WAREHOUSE
+                                                 })
+
+        for i, name in enumerate(['A', 'B']):
+            self.navigationTree.insertFolderNode([f'warehouse{i+1}'],
+                                                 {
+                                                     'name': f'{name}',
+                                                     'id': f'{name}',
+                                                     'type': MetaType.ZONE
+                                                 })
+
+        for i in range(2):
+            for k, name in enumerate(['A', 'B']):
+                self.navigationTree.insertFolderNode([f'warehouse{i+1}', f'zone{name}'],
+                                                     {
+                                                         'name': f'{k+1}',
+                                                         'id': f'{k+1}',
+                                                         'type': MetaType.SHELF
+                                                     })
         self.saveObject()
     
     def loadObject(self) -> None:
@@ -90,6 +117,47 @@ class TreeService:
             return self.navigationTree.deleteMultipleFolderNodeInSameFolderNode(path, deleteNameList)
         elif type == NodeType.ITEM:
             return self.navigationTree.deleteMultipleFileNodeInSameFolderNode(path, deleteNameList)
+
+    def getWarehouses(self):
+        warehouses = []
+        for i, (warehouseKey, warehouseValue) in enumerate(self.navigationTree.root.children.items()):
+            wType, wName, wId = warehouseValue.data.split(config['FLAG'])
+            warehouses.append({
+                'warehouse' : wName,
+                'zone': []
+            })
+            for zoneKey, zoneValue in self.navigationTree.root.children[warehouseKey].children.items():
+                zType, zName, zId = zoneValue.data.split(config['FLAG'])
+                warehouses[i]['zone'].append({
+                    'name': zName,
+                    'item': self.navigationTree.itemsCount[f'{wType+wName}/{zType+zName}']
+                })
+
+        return warehouses
+
+    def getShelfs(self, path: str):
+        destinationNode = self.navigationTree.traverse(path.split('/'))
+        zone = []
+        if destinationNode is not None:
+            for key, value in destinationNode.children.items():
+                type, name, id = value.data.split(config['FLAG'])
+                zone.append({
+                    'shelf': name,
+                    'item': self.navigationTree.itemsCount[path+f'/{type+name}']
+                })
+        return zone
+
+    def getItems(self, path: str):
+        destinationNode = self.navigationTree.traverse(path.split('/'))
+        items = []
+        if destinationNode is not None:
+            for key, value in destinationNode.children.items():
+                type, name, id = value.data.split(config['FLAG'])
+                items.append({
+                    'item': name,
+                    'id': id
+                })
+        return items
     
     def search(self, path: str, pattern: str):
         pass

@@ -30,13 +30,13 @@ def breathFirstSearchLimit(root: FolderNode, maxDepth: int = 1):
             depthTrack[d_idx+1] += len(curRoot.children.keys())
 
         for _, child in curRoot.children.items():
-            name, id = child.data.split(config['NAME_ID_FLAG'])
+            type, name, id = child.data.split(config['FLAG'])
 
             if isinstance(child, FolderNode):
-                curSearch[name] = {}
-                queue.enqueue((child, curSearch[name]))
+                curSearch[type+config['FLAG']+name] = {}
+                queue.enqueue((child, curSearch[type+config['FLAG']+name]))
             else:
-                curSearch[name] = None
+                curSearch[type+config['FLAG']+name] = None
 
         depthTrack[d_idx] -= 1
         if depthTrack[d_idx] == 0:

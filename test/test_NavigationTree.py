@@ -1,27 +1,80 @@
 from src.internal.tree import *
+from src.internal.tree import MetaType
 
 t = NavigateTree()
 
-t.insertFolderNode([''], {'name': 'test', 'id': 'testid1'})
-t.insertFolderNode([''], {'name': 'testtwo', 'id': 'testid2'})
-t.insertFolderNode([''], {'name': 'testfive', 'id': 'testid3'})
-t.insertFileNode(['testfive'], {'name': 'fileinfive', 'id': 'testfivefile'})
-t.insertFileNode(['test'], {'name': 'test2', 'id': 'testid4'})
-t.insertFolderNode(['test'], {'name': 'test2folder', 'id': 'testid5'})
-t.insertFolderNode(['test', 'test2folder'], {'name': 'testeststset', 'id':'uuidv3'})
-t.insertFolderNode(['test', 'test2folder', 'testeststset'], {'name': 'testINnnasfdasfer', 'id':'inner'})
-t.insertFolderNode(['test', 'test2folder', 'testeststset', 'testINnnasfdasfer'], {'name': 'testINnnasfdaasfsfer1111', 'id':'inner'})
-t.insertFileNode(['test', 'test2folder', 'testeststset'], {'name': 'testINnner', 'id':'inner'})
-t.insertFileNode(['test', 'test2folder', 'testeststset'], {'name': 'testINnner123123', 'id':'inner'})
-tem = t.traverse(['test'])
+t.insertFolderNode([''], {'name': '1', 'id': 'testid1', 'type': MetaType.WAREHOUSE})
+t.insertFolderNode([''], {'name': '2', 'id': 'testid2', 'type': MetaType.WAREHOUSE})
+t.insertFolderNode([''], {'name': '3', 'id': 'testid3', 'type': MetaType.WAREHOUSE})
+t.insertFolderNode(['warehouse3'], {'name': 'A', 'id': 'testfivefile', 'type': MetaType.ZONE})
+t.insertFolderNode(['warehouse1'], {'name': 'A', 'id': 'testid5', 'type': MetaType.ZONE})
+t.insertFolderNode(['warehouse1'], {'name': 'B', 'id': 'testid4', 'type': MetaType.ZONE})
+t.insertFolderNode(['warehouse1', 'zoneA'], {'name': '1', 'id':'uuidv3', 'type': MetaType.SHELF})
+t.insertFileNode(['warehouse1', 'zoneA', 'shelf1'], {'name': 'testINnnasfdasfer', 'id':'asdf', 'type': MetaType.ITEM})
+t.insertFileNode(['warehouse1', 'zoneA', 'shelf1'], {'name': 'testINnnasfdaasfsfer1111', 'id':'inner', 'type': MetaType.ITEM} )
+t.insertFolderNode(['warehouse3', 'zoneA'], {'name': '1', 'id':'inner', 'type': MetaType.SHELF})
+t.insertFileNode(['warehouse3', 'zoneA', 'shelf1'], {'name': 'testINnner123123', 'id':'inner', 'type': MetaType.ITEM})
+tem = t.traverse(['warehouse1'])
 # print(tem.children.keys())
-tem = t.traverse(['test', 'test2folder'])
+tem = t.traverse(['warehouse1', 'zoneA'])
 # print(tem.children.keys())
-t.deleteFolderNode(['test', 'test2folder'], 'testeststset')
-# print(tem.children.keys())
+# t.deleteFolderNode(['warehouse1', 'zoneA'], 'shelf1')
+# print(tem.children.keys()
 printNavigateTreeByDepth(t)
 
 print(treeToJSON(t.root))
-print(t.itemsCount)
-# print(breathFirstSearch(tem, 2))
+print('count' ,t.itemsCount)
+
+d = breathFirstSearchLimit(t.root, 2)
+arr = []
+print(breathFirstSearchLimit(t.root, 2))
 # print(childrenToJSON(t.root))
+
+def getWarehouses():
+    warehouses = []
+    for i, (warehouseKey, warehouseValue) in enumerate(t.root.children.items()):
+        wType, wName, wId = warehouseValue.data.split(config['FLAG'])
+        warehouses.append({
+            'warehouse' : wName,
+            'zone': []
+        })
+        for zoneKey, zoneValue in t.root.children[warehouseKey].children.items():
+            zType, zName, zId = zoneValue.data.split(config['FLAG'])
+            warehouses[i]['zone'].append({
+                'name': zName,
+                'item': t.itemsCount[f'{wType+wName}/{zType+zName}']
+            })
+
+
+    return warehouses
+
+def getZone(path: str):
+    destinationNode = t.traverse(path.split('/'))
+    zone = []
+    if destinationNode is not None:
+        for key, value in destinationNode.children.items():
+            type, name, id = value.data.split(config['FLAG'])
+            zone.append({
+                'shelf': name,
+                'item': t.itemsCount[path+f'/{type+name}']
+            })
+    return zone
+
+def getItems(path):
+    destinationNode = t.traverse(path.split('/'))
+    items = []
+    if destinationNode is not None:
+        for key, value in destinationNode.children.items():
+            type, name, id = value.data.split(config['FLAG'])
+            items.append({
+                'item': name,
+                'id': id
+            })
+    return items
+
+
+
+print(getWarehouses())
+print(getZone('warehouse1/zoneA'))
+print(getItems('warehouse1/zoneA/shelf1'))
+
