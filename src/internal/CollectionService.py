@@ -3,36 +3,39 @@ import os
 import uuid
 from os import path
 from multiprocessing import Pool
+from .linked_structures import Queue, Stack
+import datetime
+from datetime import timedelta  
 
-class Stack:
-    def __init__(self, list = None):
-        if list == None:
-            self.items = []
-        else:
-            self.items = list
+# class Stack:
+#     def __init__(self, list = None):
+#         if list == None:
+#             self.items = []
+#         else:
+#             self.items = list
 
-    def __str__(self):
-        s = 'stack of '+ str(self.size())+' items : '
-        for ele in self.items:
-            s += str(ele)+' '
-        return s
-    def parseJson(self):
-        return json.dumps(self, default=lambda o: o.__dict__, 
-            sort_keys=True, indent=4)
-    def push(self, i):
-        self.items.append(i)
+#     def __str__(self):
+#         s = 'stack of '+ str(self.size())+' items : '
+#         for ele in self.items:
+#             s += str(ele)+' '
+#         return s
+#     def parseJson(self):
+#         return json.dumps(self, default=lambda o: o.__dict__, 
+#             sort_keys=True, indent=4)
+#     def push(self, i):
+#         self.items.append(i)
 
-    def pop(self):   #edit code
-        return self.items.pop()
+#     def pop(self):   #edit code
+#         return self.items.pop()
 
-    def peek(self):
-        return self.items[-1]
+#     def peek(self):
+#         return self.items[-1]
 
-    def isEmpty(self):
-        return self.items == []
+#     def isEmpty(self):
+#         return self.items == []
 
-    def size(self):
-        return len(self.items)
+#     def size(self):
+#         return len(self.items)
 
 # class QueueCache:
 #     def __init__(self, maxLength):
@@ -74,6 +77,52 @@ class Stack:
 #     def update(self, key, data):
 #         self.items[key] = data
 
+class Cache:
+    def __init__(self, maxLength=1000):
+        self.cacheQueue = Queue[list[dict[str, str | int | bool]]]()
+        self.cacheData = {}
+        self.cacheSource = {}
+        self.maxLength = maxLength
+    def __len__(self):
+        return self.cacheQueue.size()
+    def append(self, cacheID: str, data: list):
+        jsonName = cacheID.split("-")[-1]
+        print(f"[Cache] jsonName : {jsonName}")
+        self.cacheData[cacheID] = data
+        self.cacheQueue.enqueue(cacheID)
+        if jsonName in self.cacheSource:
+            self.cacheSource[jsonName].add(cacheID)
+        else:
+            self.cacheSource[jsonName] = {cacheID}
+        if self.cacheQueue.size() > self.maxLength:
+            del self.cacheData[self.cacheQueue.deque()]
+    def update(self, cacheID: str, data: list):
+        if cacheID in self.cacheData:
+            self.cacheData[cacheID] = data
+        else:
+            print(f"Error : CacheID {cacheID} not found")
+    def put(self, cacheID: str, data: list):
+        if cacheID in self.cacheData:
+            self.update(cacheID, data)
+        else:
+            self.append(cacheID, data)
+    def get(self, cacheID):
+        if cacheID in self.cacheData:
+            return self.cacheData[cacheID]
+        else:
+            return None
+    def deactivate(self, jsonName):
+        print(self.cacheSource)
+        if jsonName not in self.cacheSource:
+            print(f"{jsonName} is not on cache.")
+            return
+        for cache in self.cacheSource[jsonName]:
+            self.cacheData[cache] = {}
+    def isValid(self, cacheID):
+        if cacheID not in self.cacheData:
+            return False
+        return self.cacheData[cacheID] != {}
+
 class CollectionService:
     def __init__(self, name, repoPath, jsonSize=100, threadSize=10, CacheLength=10000):
         def mkdir(Path, name):
@@ -105,7 +154,8 @@ class CollectionService:
                 "tag" : {}
                 }
             self.saveConfig()
-        self.whereCache = {}
+        self.whereCache = Cache()
+        self.whereCacheIndex = {}
         self.whereCacheValid = {}
         self.jsonCache = {}
         self.jsonValid = {}
@@ -130,7 +180,7 @@ class CollectionService:
         name = self.config["name"]
         p = f"_{name}.cnfg"
         f = open(f"{self.collectionPath()}/{p}", "w")
-        self.config["jsonAvailable"] = self.config["jsonAvailable"].items
+        self.config["jsonAvailable"] = self.config["jsonAvailable"].items()
         self.config["tag"]
         f.write(json.dumps(self.config))
         f.close()
@@ -181,15 +231,9 @@ class CollectionService:
                     self.config["tag"][tag] = {jsonName: True}
         print("saving")
         self.saveConfig()
-        # for cacheID in list(self.whereCache.keys()):
-
-        #     jName = cacheID.split("-")[-1]
-        #     if jName == jsonName:
-        #         # print(f"{jName}.json is not valid anymore.")
-        #         self.saveCache(cacheID, data, self.jsonValid, self.jsonCache)
-        #         self.jsonValid[cacheID] = False
-        # if self.cache.available(jsonName):
-        #     self.cache.update(jsonName, data)
+        self.saveCache(jsonName, data, self.jsonValid, self.jsonCache)
+        print(f"Deactivating {jsonName} qurry cache")
+        self.whereCache.deactivate(jsonName)
     def deleteJson(self, jsonName):
         fullPath = f"{self.collectionPath()}/{jsonName}.json"
         if os.path.isfile(fullPath):
@@ -286,7 +330,7 @@ class CollectionService:
             return buffer
         res = []
         buffer = []
-        chachedData = []
+        cachedData = []
         pool = Pool(processes = self.config["threadSize"] if self.config["jsonAvailable"].size() > self.config["threadSize"] else self.config["jsonAvailable"].size() if self.config["jsonAvailable"].size() != 0 else 1)  
         jsonBin = self.config["allJson"].keys() if tags == {None} else getJsons(tags)
         print(jsonBin)
@@ -297,14 +341,14 @@ class CollectionService:
             # print(jsonName)
             if self.config["allJson"][jsonName] == 0:
                 continue
-            # cacheID = f"{operator}-{column}-{str(value)}-{jsonName}"
-            # cached = cacheID in self.whereCache
-            # valid = self.isCachValid(cacheID, self.whereCacheValid, self. whereCache)
-            # if cached and valid:
-            #     print(f"Load {cacheID} from cache, Document in cache : {len(self.whereCache[cacheID])}, Search cache :{len(self.whereCache)}")
-            #     # print(self.whereCache[cacheID])
-            #     chachedData.append(self.whereCache[cacheID])
-            #     continue
+            cacheID = f"{operator}-{column}-{str(value)}-{str(tags)}-{jsonName}"
+            cached = cacheID in self.whereCache.cacheData
+            valid = self.whereCache.isValid(cacheID)
+            if cached and valid:
+                print(f"Load {cacheID} from cache, Document in cache")
+                # print(self.whereCache[cacheID])
+                cachedData.append(self.whereCache.cacheData[cacheID])
+                continue
             Json = self.loadJson(jsonName)
             buffer.append(pool.apply_async(self.searchThread, [jsonName, Json, operator, column, value, tags]))
             # t = multiprocessing.Process(target=self.searchThread, args=(Json, res, operator, column, value))
@@ -324,11 +368,10 @@ class CollectionService:
             result = ticket.get(timeout=10)
             if len(result) != 0:
                 res += result[0]
-                # cacheID = f"{operator}-{column}-{str(value)}-{result[1]}"
-                # if result[0] != []:
-                #     self.saveCache(cacheID, result[0], self.whereCacheValid, self.whereCache)
-                # self.whereCacheValid[cacheID] = True
-        for cache in chachedData:
+                cacheID = f"{operator}-{column}-{str(value)}-{str(tags)}-{result[1]}"
+                if result[0] != []:
+                    self.whereCache.put(cacheID, result[0])
+        for cache in cachedData:
             res += cache
         return res
     def getDoc(self, docID):
@@ -363,11 +406,31 @@ class CollectionService:
         print(f"Deleting : {docID}")
         del Json[docID]
         self.config["allJson"][jsonName] -= 1
-        if jsonName not in self.config["jsonAvailable"].items:
+        if jsonName not in self.config["jsonAvailable"].items():
             self.config["jsonAvailable"].push(jsonName)
         self.saveJson(jsonName, Json)
         self.saveConfig()
         
-class MockupDB:
-    def __init__(self):
-        self.colume = []
+class LogService():
+    def __init__(self, name, repoPath, jsonSize=100, maxLogAge=30):
+        self.logDB = CollectionService(self, name, repoPath, jsonSize, threadSize=10, CacheLength=1000)
+        self.maxAge = maxLogAge
+    def push(self, data, Date, tags=[]):
+        #Date format : "day/month/year hour.minute"
+        date, time = Date.split(" ")
+        d,m,y = date.split("/")
+        h,m = time.split(".")
+        data["timeStamp"] = Date
+        self.logDB.addDoc(data, [d+"d", m+"m", y+"y", h+"h", m+"m"]+tags)
+    def removeOutdate(self):
+        i = self.maxAge
+        while True:
+            p = datetime.datetime.now() - timedelta(days=i)
+            outdated = self.logDB.where("ID","#",True,[f"{p.day}d",f"{p.month}",f"{p.year}"])
+            if len(outdated) == 0:
+                break
+            for doc in outdated:
+                self.logDB.deleteDoc(doc["ID"])
+            i += 1
+
+    
