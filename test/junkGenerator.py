@@ -3,7 +3,7 @@ import requests as rq
 import random as rd
 
 tcasRound = ["1" for i in range(2000)]+["2" for i in range(2000)]+["3" for i in range(2000)]+["4" for i in range(2000)]+["5" for i in range(2000)]
-for i in range(10000):
+for i in range(1000):
     data = {
         "name" : f"JackD{i}",
         "age" : rd.randint(18,40),

@@ -20,7 +20,7 @@ async def root():
 
 @app.get("/cache")
 async def cache():
-    return f""" Search cache : {len(db.whereCache)}, JSON cache : {len(db.jsonCache)}  {db.whereCache}  {db.jsonCache}"""
+    return f""" Search cache : {len(db.whereCache)}, JSON cache : {len(db.jsonCache)}  {db.whereCache.cacheData}  {db.jsonCache}"""
 
 @app.get("/valid")
 async def cache():
