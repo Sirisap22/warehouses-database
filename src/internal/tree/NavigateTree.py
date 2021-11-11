@@ -80,7 +80,7 @@ class NavigateTree:
         if destinationNode is None or not isinstance(destinationNode, FolderNode):
             return False
         folderName, type, id = metaData['name'], str(metaData['type']), metaData['id']
-        destinationNode.children[type+folderName] = FolderNode(f"{type}{config['FLAG']}{folderName}{config['FLAG']}{id}")
+        destinationNode.children[type+folderName] = FolderNode(metaData)
         return True
 
     def insertMultipleFolderNodeInSameFolderNode(self, path: list[str], metaDataList: list[MetaData]) -> bool:
@@ -89,7 +89,7 @@ class NavigateTree:
             return False
         for metaData in metaDataList:
             folderName, type, id = metaData['name'], str(metaData['type']), metaData['id']
-            destinationNode.children[type+folderName] = FolderNode(f"{type}{config['FLAG']}{folderName}{config['FLAG']}{id}")
+            destinationNode.children[type+folderName] = FolderNode(metaData)
         return True
 
     def insertFileNode(self, path: list[str], metaData: MetaData) -> bool:
@@ -100,7 +100,7 @@ class NavigateTree:
         self.updateItemsCount(path, 1)
 
         fileName, type, id = metaData['name'], str(metaData['type']), metaData['id']
-        destinationNode.children[type+fileName] = FileNode(f"{type}{config['FLAG']}{fileName}{config['FLAG']}{id}")
+        destinationNode.children[type+fileName] = FileNode(metaData)
         return True
 
     def insertMultipleFileNodeInSameFolderNode(self, path: list[str], metaDataList: list[MetaData]) -> bool:
@@ -112,25 +112,31 @@ class NavigateTree:
 
         for metaData in metaDataList:
             fileName, type, id = metaData['name'], str(metaData['type']), metaData['id']
-            destinationNode.children[type+fileName] = FileNode(f"{type}{config['FLAG']}{fileName}{config['FLAG']}{id}")
+            destinationNode.children[type+fileName] = FileNode(metaData)
         return True
 
-    def deleteFileNode(self, path: list[str], deleteFileName: str) -> bool:
-        return self.deleteNode(NodeType.ITEM, path, deleteFileName)
+    def deleteFileNode(self, path: list[str], deleteFileId: str) -> bool:
+        return self.deleteNode(NodeType.ITEM, path, deleteFileId)
 
-    def deleteMultipleFileNodeInSameFolderNode(self, path: list[str], deleteFileNameList: list[str]) -> bool:
-        return self.deleteMultipleNodeInSameFolderNode(NodeType.ITEM, path, deleteFileNameList)
+    def deleteMultipleFileNodeInSameFolderNode(self, path: list[str], deleteFileIdList: list[str]) -> bool:
+        return self.deleteMultipleNodeInSameFolderNode(NodeType.ITEM, path, deleteFileIdList)
 
-    def deleteFolderNode(self, path: list[str], deleteFolderName: str) -> bool:
-        return self.deleteNode(NodeType.NON_ITEM, path, deleteFolderName)
+    def deleteFolderNode(self, path: list[str], deleteFolderId: str) -> bool:
+        return self.deleteNode(NodeType.NON_ITEM, path, deleteFolderId)
 
-    def deleteMultipleFolderNodeInSameFolderNode(self, path: list[str], deleteFolderNameList: list[str]) -> bool:
-        return self.deleteNode(NodeType.NON_ITEM, path, deleteFolderNameList)
+    def deleteMultipleFolderNodeInSameFolderNode(self, path: list[str], deleteFolderIdList: list[str]) -> bool:
+        return self.deleteNode(NodeType.NON_ITEM, path, deleteFolderIdList)
 
-    def deleteNode(self, nodeType: NodeType, path: list[str], deleteName: str) -> bool:
+    def deleteNode(self, nodeType: NodeType, path: list[str], deleteId: str) -> bool:
         destinationNode = self.traverse(path)
         if destinationNode is None or not isinstance(destinationNode, FolderNode):
             return False
+
+        for d in destinationNode.children.values():
+            value = d.data
+
+            if deleteId == value['id']:
+                deleteName = value['type'] + value['name']
 
         if nodeType == NodeType.ITEM:
             self.updateItemsCount(path, -1)
@@ -144,10 +150,17 @@ class NavigateTree:
         except KeyError:
             return False
         
-    def deleteMultipleNodeInSameFolderNode(self,nodeType: NodeType, path: list[str], deleteNameList: list[str]) -> bool:
+    def deleteMultipleNodeInSameFolderNode(self,nodeType: NodeType, path: list[str], deleteIdList: list[str]) -> bool:
         destinationNode = self.traverse(path)
         if destinationNode is None or not isinstance(destinationNode, FolderNode):
             return False
+
+        deleteNameList = []
+        for d in destinationNode.children.values():
+            value = d.data
+
+            if value['id'] in deleteIdList:
+                deleteNameList.append(value['type'] + value['name'])
 
         if nodeType == NodeType.ITEM:
             self.updateItemsCount(path, -len(deleteNameList))

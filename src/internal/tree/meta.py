@@ -4,6 +4,8 @@ from enum import Enum
 class MetaType(Enum):
     def __str__(self):
         return str(self.value)
+    def jsonable(self):
+        return self.__str__()
     WAREHOUSE: str = 'warehouse'
     ZONE: str = 'zone'
     SHELF: str = 'shelf'

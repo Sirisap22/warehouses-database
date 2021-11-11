@@ -25,21 +25,23 @@ printNavigateTreeByDepth(t)
 print(treeToJSON(t.root))
 print('count' ,t.itemsCount)
 
-d = breathFirstSearchLimit(t.root, 2)
+# d = breathFirstSearchLimit(t.root, 2)
 arr = []
-print(breathFirstSearchLimit(t.root, 2))
+# print(breathFirstSearchLimit(t.root, 2))
 # print(childrenToJSON(t.root))
 
 def getWarehouses():
     warehouses = []
     for i, (warehouseKey, warehouseValue) in enumerate(t.root.children.items()):
-        wType, wName, wId = warehouseValue.data.split(config['FLAG'])
+        wD = warehouseValue.data
+        wType, wName, wId = str(wD['type']), wD['name'], wD['id']
         warehouses.append({
             'warehouse' : wName,
             'zone': []
         })
         for zoneKey, zoneValue in t.root.children[warehouseKey].children.items():
-            zType, zName, zId = zoneValue.data.split(config['FLAG'])
+            zD = zoneValue.data
+            zType, zName, zId = str(zD['type']), zD['name'], zD['id']
             warehouses[i]['zone'].append({
                 'name': zName,
                 'item': t.itemsCount[f'{wType+wName}/{zType+zName}']
@@ -53,7 +55,8 @@ def getZone(path: str):
     zone = []
     if destinationNode is not None:
         for key, value in destinationNode.children.items():
-            type, name, id = value.data.split(config['FLAG'])
+            sD = value.data
+            type, name, id = str(sD['type']), sD['name'], sD['id']
             zone.append({
                 'shelf': name,
                 'item': t.itemsCount[path+f'/{type+name}']
@@ -65,7 +68,8 @@ def getItems(path):
     items = []
     if destinationNode is not None:
         for key, value in destinationNode.children.items():
-            type, name, id = value.data.split(config['FLAG'])
+            iD = value.data
+            type, name, id = str(iD['type']), iD['name'], iD['id']
             items.append({
                 'item': name,
                 'id': id

@@ -121,13 +121,15 @@ class TreeService:
     def getWarehouses(self):
         warehouses = []
         for i, (warehouseKey, warehouseValue) in enumerate(self.navigationTree.root.children.items()):
-            wType, wName, wId = warehouseValue.data.split(config['FLAG'])
+            wD = warehouseValue.data
+            wType, wName, wId = str(wD['type']), wD['name'], wD['id']
             warehouses.append({
                 'warehouse' : wName,
                 'zone': []
             })
             for zoneKey, zoneValue in self.navigationTree.root.children[warehouseKey].children.items():
-                zType, zName, zId = zoneValue.data.split(config['FLAG'])
+                zD = zoneValue.data
+                zType, zName, zId = str(zD['type']), zD['name'], zD['id']
                 warehouses[i]['zone'].append({
                     'name': zName,
                     'item': self.navigationTree.itemsCount[f'{wType+wName}/{zType+zName}']
@@ -140,7 +142,8 @@ class TreeService:
         zone = []
         if destinationNode is not None:
             for key, value in destinationNode.children.items():
-                type, name, id = value.data.split(config['FLAG'])
+                sD = value.data
+                type, name, id = str(sD['type']), sD['name'], sD['id']
                 zone.append({
                     'shelf': name,
                     'item': self.navigationTree.itemsCount[path+f'/{type+name}']
@@ -152,7 +155,8 @@ class TreeService:
         items = []
         if destinationNode is not None:
             for key, value in destinationNode.children.items():
-                type, name, id = value.data.split(config['FLAG'])
+                iD = value.data
+                type, name, id = str(iD['type']), iD['name'], iD['id']
                 items.append({
                     'item': name,
                     'id': id

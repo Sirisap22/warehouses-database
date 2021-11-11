@@ -16,6 +16,12 @@ class Stack(Generic[T]):
 
     def isEmpty(self) -> bool:
         return len(self.store) == 0
+    
+    def size(self) -> int:
+        return len(self.store)
+    
+    def items(self) -> list[T]:
+        return list(self.store)
 
     def peek(self) -> T:
         return self.store[-1]
