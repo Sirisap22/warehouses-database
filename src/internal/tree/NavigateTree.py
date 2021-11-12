@@ -79,17 +79,25 @@ class NavigateTree:
         destinationNode = self.traverse(path)
         if destinationNode is None or not isinstance(destinationNode, FolderNode):
             return False
+
         folderName, type, id = metaData['name'], str(metaData['type']), metaData['id']
-        destinationNode.children[type+folderName] = FolderNode(metaData)
-        return True
+        if type+folderName not in destinationNode.children:
+            destinationNode.children[type+folderName] = FolderNode(metaData)
+            return True
+
+        return False
 
     def insertMultipleFolderNodeInSameFolderNode(self, path: list[str], metaDataList: list[MetaData]) -> bool:
         destinationNode = self.traverse(path)
         if destinationNode is None or not isinstance(destinationNode, FolderNode):
             return False
+
         for metaData in metaDataList:
             folderName, type, id = metaData['name'], str(metaData['type']), metaData['id']
+            if type+folderName in destinationNode.children:
+                return False
             destinationNode.children[type+folderName] = FolderNode(metaData)
+
         return True
 
     def insertFileNode(self, path: list[str], metaData: MetaData) -> bool:
@@ -100,7 +108,7 @@ class NavigateTree:
         self.updateItemsCount(path, 1)
 
         fileName, type, id = metaData['name'], str(metaData['type']), metaData['id']
-        destinationNode.children[type+fileName] = FileNode(metaData)
+        destinationNode.children[id] = FileNode(metaData)
         return True
 
     def insertMultipleFileNodeInSameFolderNode(self, path: list[str], metaDataList: list[MetaData]) -> bool:
@@ -112,7 +120,7 @@ class NavigateTree:
 
         for metaData in metaDataList:
             fileName, type, id = metaData['name'], str(metaData['type']), metaData['id']
-            destinationNode.children[type+fileName] = FileNode(metaData)
+            destinationNode.children[id] = FileNode(metaData)
         return True
 
     def deleteFileNode(self, path: list[str], deleteFileId: str) -> bool:
@@ -138,15 +146,17 @@ class NavigateTree:
             if deleteId == value['id']:
                 deleteName = value['type'] + value['name']
 
-        if nodeType == NodeType.ITEM:
-            self.updateItemsCount(path, -1)
-        elif nodeType == NodeType.NON_ITEM:
-            self.updateItemsCount(path, -self.itemsCount['/'.join(path + [deleteName])])
-            self.deleteItemsCount(path + [deleteName])
-
         try:
-            del destinationNode.children[deleteName]
-            return True
+            if nodeType == NodeType.ITEM:
+                self.updateItemsCount(path, -1)
+                del destinationNode.children[deleteId]
+
+            elif nodeType == NodeType.NON_ITEM:
+                self.updateItemsCount(path, -self.itemsCount['/'.join(path + [deleteName])])
+                self.deleteItemsCount(path + [deleteName])
+                del destinationNode.children[deleteName]
+
+                return True
         except KeyError:
             return False
         
@@ -162,16 +172,24 @@ class NavigateTree:
             if value['id'] in deleteIdList:
                 deleteNameList.append(value['type'] + value['name'])
 
-        if nodeType == NodeType.ITEM:
-            self.updateItemsCount(path, -len(deleteNameList))
-        elif nodeType == NodeType.NON_ITEM:
-            for deleteName in deleteNameList:
-                self.updateItemsCount(path, -self.itemsCount['/'.join(path + [deleteName])])
-                self.deleteItemsCount(path + [deleteName])
-
         try:
-            for deleteName in deleteNameList:
-                del destinationNode.children[deleteName]
-            return True
+            if nodeType == NodeType.ITEM:
+                for deleteName in deleteNameList:
+                    if self.itemsCount[path + f"/{deleteName}"] > 0:
+                        return False
+                
+                for deleteId in deleteIdList:
+                    del destinationNode.children[deleteId]
+                return True
+
+                # self.updateItemsCount(path, -len(deleteNameList))
+            elif nodeType == NodeType.NON_ITEM:
+                for deleteName in deleteNameList:
+                    self.updateItemsCount(path, -self.itemsCount['/'.join(path + [deleteName])])
+                    self.deleteItemsCount(path + [deleteName])
+
+                for deleteName in deleteNameList:
+                    del destinationNode.children[deleteName]
+                return True
         except KeyError:
             return False

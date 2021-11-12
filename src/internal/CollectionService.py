@@ -410,6 +410,17 @@ class CollectionService:
             self.config["jsonAvailable"].push(jsonName)
         self.saveJson(jsonName, Json)
         self.saveConfig()
+    def updateDoc(self, docID, data):
+        jsonFile = self.loadJson(docID.split("_")[1])
+        jsonFile[docID] = data
+        self.saveJson(docID.split("_")[1], jsonFile)
+    def removeTag(self, docID, tag):
+        doc = self.getDoc(docID)
+        if tag in doc["tags"]:
+            del doc["tags"][tag]
+            return
+        print(f"[removeTag] tag {tag} not found in {docID}")
+
         
 class LogService():
     def __init__(self, name, repoPath, jsonSize=100, maxLogAge=30):
