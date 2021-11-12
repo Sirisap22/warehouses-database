@@ -170,20 +170,21 @@ class NavigateTree:
             value = d.data
 
             if value['id'] in deleteIdList:
-                deleteNameList.append(value['type'] + value['name'])
+                deleteNameList.append(str(value['type']) + value['name'])
 
         try:
             if nodeType == NodeType.ITEM:
-                for deleteName in deleteNameList:
-                    if self.itemsCount[path + f"/{deleteName}"] > 0:
-                        return False
                 
                 for deleteId in deleteIdList:
                     del destinationNode.children[deleteId]
-                return True
 
-                # self.updateItemsCount(path, -len(deleteNameList))
+                self.updateItemsCount(path, -len(deleteNameList))
+                return True
             elif nodeType == NodeType.NON_ITEM:
+                for deleteName in deleteNameList:
+                    if self.itemsCount["/".join(path) + f"/{deleteName}"] > 0:
+                        return False
+
                 for deleteName in deleteNameList:
                     self.updateItemsCount(path, -self.itemsCount['/'.join(path + [deleteName])])
                     self.deleteItemsCount(path + [deleteName])

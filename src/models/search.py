@@ -8,3 +8,7 @@ class InsertPath(BaseModel):
 class DeletePath(BaseModel):
     path: str
     nameList: list[str]
+
+class DeleteItemList(BaseModel):
+    path: str
+    itemIdList: list[str]

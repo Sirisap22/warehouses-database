@@ -7,76 +7,6 @@ from .linked_structures import Queue, Stack
 import datetime
 from datetime import timedelta  
 
-# class Stack:
-#     def __init__(self, list = None):
-#         if list == None:
-#             self.items = []
-#         else:
-#             self.items = list
-
-#     def __str__(self):
-#         s = 'stack of '+ str(self.size())+' items : '
-#         for ele in self.items:
-#             s += str(ele)+' '
-#         return s
-#     def parseJson(self):
-#         return json.dumps(self, default=lambda o: o.__dict__, 
-#             sort_keys=True, indent=4)
-#     def push(self, i):
-#         self.items.append(i)
-
-#     def pop(self):   #edit code
-#         return self.items.pop()
-
-#     def peek(self):
-#         return self.items[-1]
-
-#     def isEmpty(self):
-#         return self.items == []
-
-#     def size(self):
-#         return len(self.items)
-
-# class QueueCache:
-#     def __init__(self, maxLength):
-#         self.items = {}
-#         self.maxLength = maxLength
-
-#     def __len__(self):
-#         return len(self.items)
-#     def __str__(self):
-#         return str(self.items)
-#     def __getitem__(self, key):
-#         item = self.items[key]
-#         del self.items[key]
-#         self.enQueue(key, item)
-#         return self.items[key]
-#     def lastKey(self):
-#         return list(self.items.keys())[0]
-#     def enQueue(self, key, data):
-#         self.items[key] = data
-#         if len(self.items) > self.maxLength:
-#             self.deQueue()
-#     def deQueue(self):
-#         if len(self.items) != 0:
-#             res = {self.lastKey() : self.items[self.lastKey()]}
-#             del self.items[self.lastKey()]
-#             return res
-#         return {}
-#     def peek(self):
-#         return self.items[self.lastKey()]
-#     def size(self):
-#         return sys.getsizeof(self.items)
-#     def available(self, key):
-#         isContain = self.items[key] is not None 
-#         if isContain:
-#             item = self.items[key]
-#             del self.items[key]
-#             self.enQueue(key, item)
-#         return isContain
-#     def update(self, key, data):
-#         self.items[key] = data
-
 class Cache:
     def __init__(self, maxLength=1000):
         self.cacheQueue = Queue[list[dict[str, str | int | bool]]]()
@@ -167,15 +97,15 @@ class CollectionService:
         return buffer
     def isCachValid(self, cacheID, validation, cacheBin):
         return cacheID in cacheBin and cacheID in validation and validation[cacheID]
-    def saveCache(self, ID, Data, validation, cacheBin):
-        # print(f"Saving cache for {ID}")
+    def saveCache(self, id, Data, validation, cacheBin):
+        # print(f"Saving cache for {id}")
         if len(cacheBin) < self.config["CacheLength"]:
-            cacheBin[ID] = Data
+            cacheBin[id] = Data
         else:
             # print("Cache overflow")
             cacheBin.pop()
             validation.pop()
-            cacheBin[ID] = Data
+            cacheBin[id] = Data
     def saveConfig(self):
         name = self.config["name"]
         p = f"_{name}.cnfg"
@@ -267,16 +197,16 @@ class CollectionService:
         return res
     def addDoc(self, data, tags=[None]):
         jsonName, jsonData = self.getJson()
-        ID = str(uuid.uuid1())+f"_{jsonName}"
-        jsonData[ID] = data
-        jsonData[ID]["ID"] = ID
-        jsonData[ID]["tags"] = dict.fromkeys(tags, True)
+        id = str(uuid.uuid1())+f"_{jsonName}"
+        jsonData[id] = data
+        jsonData[id]["id"] = id
+        jsonData[id]["tags"] = dict.fromkeys(tags, True)
         self.saveJson(jsonName, jsonData, tags=tags)
         self.config["allJson"][jsonName] += 1
         if self.config["allJson"][jsonName] >= self.config["jsonSize"]:
             self.config["jsonAvailable"].pop()
         self.saveConfig()
-        return ID
+        return id
     def searchThread(self, jsonName, Json, operator, column, value, tags):
         Bin = []
         if operator == "==":
@@ -403,6 +333,9 @@ class CollectionService:
         #         deleteList = result
         jsonName = docID.split("_")[1]
         Json = self.loadJson(jsonName)
+        if docID not in Json:
+            print(f"[deleteDoc] docID {docID} not found in { jsonName}")
+            return
         print(f"Deleting : {docID}")
         del Json[docID]
         self.config["allJson"][jsonName] -= 1
@@ -437,11 +370,11 @@ class LogService():
         i = self.maxAge
         while True:
             p = datetime.datetime.now() - timedelta(days=i)
-            outdated = self.logDB.where("ID","#",True,[f"{p.day}d",f"{p.month}",f"{p.year}"])
+            outdated = self.logDB.where("id","#",True,[f"{p.day}d",f"{p.month}",f"{p.year}"])
             if len(outdated) == 0:
                 break
             for doc in outdated:
-                self.logDB.deleteDoc(doc["ID"])
+                self.logDB.deleteDoc(doc["id"])
             i += 1
 
     
