@@ -157,10 +157,7 @@ class TreeService:
             for key, value in destinationNode.children.items():
                 iD = value.data
                 type, name, id = str(iD['type']), iD['name'], iD['id']
-                items.append({
-                    'item': name,
-                    'id': id
-                })
+                items.append(id)
         return items
     
     def search(self, path: str, pattern: str):
