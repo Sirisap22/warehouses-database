@@ -6,7 +6,7 @@ import uvicorn
 from datetime import datetime
 
 from .internal import TreeService, NodeType, treeToJSON, MetaData, MetaType, CollectionService, BarcodeService
-from .models.search import InsertPath, DeletePath, DeleteItemList
+from .models.search import InsertPath, DeletePath, DeleteItemList, SearchData
 from .models.add import InsertData
 
 config = dotenv_values('.env.dev')
@@ -33,6 +33,13 @@ def shutdown_event():
 @app.get("/", tags=["search"])
 async def getHome():
     return Response(media_type="application/json", content=treeToJSON(treeService.navigationTree.root))
+
+@app.get("/search", tags=["search"])
+async def getSearch(searchData: SearchData):
+    itemIdList = treeService.search(searchData.path, searchData.pattern)
+    # get data in collection service
+    pass
+    
 
 @app.get("/warehouse", tags=["search"])
 async def getWarehouse():
