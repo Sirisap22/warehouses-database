@@ -351,8 +351,20 @@ class CollectionService:
         doc = self.getDoc(docID)
         if tag in doc["tags"]:
             del doc["tags"][tag]
+            self.updateDoc(doc["id"], doc)
             return
         print(f"[removeTag] tag {tag} not found in {docID}")
+    def addTag(self, docID, tag):
+        doc = self.getDoc(docID)
+        doc["tags"][tag] = True
+        self.updateDoc(doc["id"], doc)
+        if tag in self.config["tag"]:
+            self.config["tag"][tag][str(doc["id"].split("_")[1])] = True
+        else:
+            self.config["tag"][tag] = {str(doc["id"].split("_")[1]) : True}
+        self.saveConfig()
+        print(f"[addTag] tag {tag} not found in {docID}")
+
 
         
 class LogService():
