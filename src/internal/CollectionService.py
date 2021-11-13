@@ -25,7 +25,7 @@ class Cache:
         else:
             self.cacheSource[jsonName] = {cacheID}
         if self.cacheQueue.size() > self.maxLength:
-            del self.cacheData[self.cacheQueue.deque()]
+            del self.cacheData[self.cacheQueue.dequeue()]
     def update(self, cacheID: str, data: list):
         if cacheID in self.cacheData:
             self.cacheData[cacheID] = data

@@ -8,6 +8,7 @@ from .TreeNode import TreeNode
 from .FileNode import FileNode
 from .FolderNode import FolderNode
 from .NodeType import NodeType
+from ..linked_structures import Queue
 from .meta import MetaData
 
 config = dotenv_values(".env.dev")
@@ -56,24 +57,26 @@ class NavigateTree:
         except:
             return None
     
-    def searchChildren(self, path: list[str], pattern: str) -> dict[str, str] | None: 
+    def searchAllFileNode(self, path: list[str], pattern: str) -> list[str] | None: 
         destinationNode = self.traverse(path)
         if destinationNode is None or not isinstance(destinationNode, FolderNode):
             return None
-
-        result = {}
-        for key, value in destinationNode.children.items():
-            if search(pattern, key) is not None:
-                result[key] = value['data']
         
-        return result
+        searchedItemIdList = []
+        queue = Queue([destinationNode])
+        while not queue.isEmpty():
+            curNode = queue.dequeue()
 
-    
-    def searchAllSubChildren(self, path: list[str], pattern: str) -> Type[TreeNode] | None: 
-        destinationNode = self.traverse(path)
-        if destinationNode is None or not isinstance(destinationNode, FolderNode):
-            return None
-        pass
+            if isinstance(curNode, FileNode):
+                if search(pattern, curNode.data['name']) is not None: 
+                    searchedItemIdList.append(curNode.data['id'])
+            
+            else:
+                print("CURRR", curNode)
+                for key, value in curNode.children.items():
+                    queue.enqueue(value)
+
+        return searchedItemIdList
 
     def insertFolderNode(self, path: list[str], metaData: MetaData) -> bool:
         destinationNode = self.traverse(path)

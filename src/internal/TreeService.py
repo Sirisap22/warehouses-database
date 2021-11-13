@@ -160,5 +160,9 @@ class TreeService:
                 items.append(id)
         return items
     
-    def search(self, path: str, pattern: str):
-        pass
+    def search(self, path: str, pattern: str) -> list[str] | None:
+        path = path.split("/")
+        itemIdList = self.navigationTree.searchAllFileNode(path, pattern)
+
+        return itemIdList
+

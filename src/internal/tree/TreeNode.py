@@ -8,7 +8,7 @@ class TreeNode:
         self.children = children
     
     def __str__(self) -> str:
-        return str(self.data['type']+self.data['name'])
+        return str(str(self.data['type'])+self.data['name'])
     
     def jsonable(self):
         return self.__dict__

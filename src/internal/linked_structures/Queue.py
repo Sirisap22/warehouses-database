@@ -28,7 +28,7 @@ class Queue(Generic[T]):
     def enqueue(self, data: Any) -> None:
         self.store.append(data)
 
-    def deque(self) -> T:
+    def dequeue(self) -> T:
         return self.store.popleft()
 
 

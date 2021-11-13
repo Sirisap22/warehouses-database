@@ -81,4 +81,5 @@ def getItems(path):
 print(getWarehouses())
 print(getZone('warehouse1/zoneA'))
 print(getItems('warehouse1/zoneA/shelf1'))
+print(t.searchAllFileNode(['warehouse1'], 'IN'))
 
