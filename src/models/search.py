@@ -12,7 +12,3 @@ class DeletePath(BaseModel):
 class DeleteItemList(BaseModel):
     path: str
     itemIdList: list[str]
-
-class SearchData(BaseModel):
-    path: str
-    pattern: str

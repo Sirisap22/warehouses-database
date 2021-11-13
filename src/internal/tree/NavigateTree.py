@@ -62,21 +62,21 @@ class NavigateTree:
         if destinationNode is None or not isinstance(destinationNode, FolderNode):
             return None
         
-        searchedItemIdList = []
+        searchedItemList = []
         queue = Queue([destinationNode])
         while not queue.isEmpty():
             curNode = queue.dequeue()
 
             if isinstance(curNode, FileNode):
                 if search(pattern, curNode.data['name']) is not None: 
-                    searchedItemIdList.append(curNode.data['id'])
+                    print(search(pattern, curNode.data['name']))
+                    searchedItemList.append(curNode.data)
             
             else:
-                print("CURRR", curNode)
                 for key, value in curNode.children.items():
                     queue.enqueue(value)
 
-        return searchedItemIdList
+        return searchedItemList
 
     def insertFolderNode(self, path: list[str], metaData: MetaData) -> bool:
         destinationNode = self.traverse(path)
