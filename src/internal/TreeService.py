@@ -56,6 +56,7 @@ class TreeService:
     
     def initializeObject(self) -> None:
         self.navigationTree = NavigateTree()
+        print("created new tree")
         for i in range(2):
             self.navigationTree.insertFolderNode([''],
                                                  {
@@ -64,22 +65,24 @@ class TreeService:
                                                      'type': MetaType.WAREHOUSE
                                                  })
 
-        for i, name in enumerate(['A', 'B']):
-            self.navigationTree.insertFolderNode([f'warehouse{i+1}'],
-                                                 {
-                                                     'name': f'{name}',
-                                                     'id': f'{name}',
-                                                     'type': MetaType.ZONE
-                                                 })
+        for i in range(2):
+            for name in ['A', 'B']:
+                self.navigationTree.insertFolderNode([f'warehouse{i+1}'],
+                                                    {
+                                                        'name': f'{name}',
+                                                        'id': f'{name}',
+                                                        'type': MetaType.ZONE
+                                                    })
 
         for i in range(2):
-            for k, name in enumerate(['A', 'B']):
-                self.navigationTree.insertFolderNode([f'warehouse{i+1}', f'zone{name}'],
-                                                     {
-                                                         'name': f'{k+1}',
-                                                         'id': f'{k+1}',
-                                                         'type': MetaType.SHELF
-                                                     })
+            for name in ['A', 'B']:
+                for k in range(2):
+                    self.navigationTree.insertFolderNode([f'warehouse{i+1}', f'zone{name}'],
+                                                        {
+                                                            'name': f'{k+1}',
+                                                            'id': f'{k+1}',
+                                                            'type': MetaType.SHELF
+                                                        })
         self.saveObject()
     
     def loadObject(self) -> None:
@@ -165,4 +168,8 @@ class TreeService:
         itemIdList = self.navigationTree.searchAllFileNode(path, pattern)
 
         return itemIdList
+
+    
+    
+  
 

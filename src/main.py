@@ -12,6 +12,60 @@ from .models.search import InsertPath, DeletePath, DeleteItemList
 from .models.add import InsertData
 
 config = dotenv_values('.env')
+## TODO add mergesort to TreeService
+
+def compareLocation(a, operator, b):
+        commands = {
+            ">" : lambda x, y : x > y,
+            "<" : lambda x, y : x < y,
+            ">=": lambda x, y : x >= y,
+            "<=": lambda x, y : x <= y,
+            "==": lambda x, y : x == y,
+        }
+        print(a, b)
+    
+        aNums, aChars = a.split("-")
+        bNums, bChars = b.split("-")
+        aNums = int(aNums)
+        bNums = int(bNums)
+        aChars = sum([ord(c) for c in aChars])
+        bChars = sum([ord(c) for c in bChars])
+
+        if  aChars == bChars:
+            return commands[operator](aNums, bNums)
+        
+        return commands[operator](aChars, bChars)
+    
+def mergeSortByLocation(arr):
+    print(arr)
+    if len(arr) > 1:
+        mid = len(arr)//2
+
+        L = arr[:mid]
+        R = arr[mid:]
+
+        mergeSortByLocation(L)
+        mergeSortByLocation(R)
+
+        i = j = k = 0
+        while i < len(L) and j < len(R):
+            if compareLocation(L[i]['location'], "<", R[j]['location']):
+                arr[k] = L[i]
+                i += 1
+            else:
+                arr[k] = R[j]
+                j += 1
+            k += 1
+
+        while i < len(L):
+            arr[k] = L[i]
+            i += 1
+            k += 1
+        while j < len(R):
+            arr[k] = R[j]
+            j += 1
+            k += 1
+  
 
 app = FastAPI()
 
@@ -69,7 +123,14 @@ async def getItems(warehouseName: str, zoneName: str, shelfName: str):
     res = []
     for Id in itemsId:
         ## TODO process doc
-        res.append(collectionService.getDoc(Id))
+        doc = copy.deepcopy(collectionService.getDoc(Id))
+        
+        doc["name"] = barcodeService.mapBarcode(doc["barcode"])["name"]
+        del doc["tags"]
+        del doc["barcode"]
+        res.append(doc)
+    
+    mergeSortByLocation(res)
     return res
 
 @app.post("/path", tags=["search"])
