@@ -8,7 +8,7 @@ from .NavigateTree import NavigateTree
 from .TreeNode import TreeNode
 from ..linked_structures import Queue
 
-config = dotenv_values('.env.dev')
+config = dotenv_values('.env')
 
 def breathFirstSearchLimit(root: FolderNode, maxDepth: int = 1):
     if maxDepth > 2:

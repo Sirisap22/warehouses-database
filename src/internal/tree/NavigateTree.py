@@ -11,7 +11,7 @@ from .NodeType import NodeType
 from ..linked_structures import Queue
 from .meta import MetaData
 
-config = dotenv_values(".env.dev")
+config = dotenv_values(".env")
 
 def defaultVal():
     return 0

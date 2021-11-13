@@ -11,7 +11,7 @@ from .internal import TreeService, NodeType, treeToJSON, MetaData, MetaType, Col
 from .models.search import InsertPath, DeletePath, DeleteItemList
 from .models.add import InsertData
 
-config = dotenv_values('.env.dev')
+config = dotenv_values('.env')
 
 app = FastAPI()
 

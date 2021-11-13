@@ -6,7 +6,7 @@ from dotenv import dotenv_values
 from .tree import NavigateTree, MetaData, MetaType, NodeType
 
 
-config = dotenv_values(".env.dev")
+config = dotenv_values(".env")
 
 class TreeService:
     def __init__(self, name: str, repoPath: str) -> None:
