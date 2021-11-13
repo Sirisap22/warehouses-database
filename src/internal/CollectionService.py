@@ -98,11 +98,9 @@ class CollectionService:
     def isCachValid(self, cacheID, validation, cacheBin):
         return cacheID in cacheBin and cacheID in validation and validation[cacheID]
     def saveCache(self, id, Data, validation, cacheBin):
-        # print(f"Saving cache for {id}")
         if len(cacheBin) < self.config["CacheLength"]:
             cacheBin[id] = Data
         else:
-            # print("Cache overflow")
             cacheBin.pop()
             validation.pop()
             cacheBin[id] = Data
@@ -139,11 +137,9 @@ class CollectionService:
         valid = self.isCachValid(cacheID, self.jsonValid, self.jsonCache)
         if cached and valid:
             print(f"Load {cacheID} from cache")
-            # print(self.jsonCache[cacheID])
             return self.jsonCache[cacheID]
         print(f"Loading {jsonName}.json from disk. (loadJson)")
         data = json.load(open(f"{self.collectionPath()}/{jsonName}.json", "r"))
-        # self.cache.enQueue(jsonName, data)
         print(f"Saving {cacheID}.json cache.")
         self.saveCache(cacheID, data, self.jsonValid, self.jsonCache)
         self.jsonValid[cacheID] = True
@@ -169,24 +165,12 @@ class CollectionService:
         if os.path.isfile(fullPath):
             os.remove(fullPath)
     def getJson(self):
-        # for jsonName in self.config["jsonAvailable"].keys():
-        #     if self.config["jsonAvailable"][jsonName] < self.config["jsonSize"]:
-        #         return jsonName, self.loadJson(jsonName)
-        # newName = str(len(self.config["jsonAvailable"]))
-        # self.createNewJson(newName)
-        # return newName, self.loadJson(newName)
         if self.config["jsonAvailable"].isEmpty():
             newName = str(len(self.config["allJson"]))
             self.createNewJson(newName)
             return newName, self.loadJson(newName) 
         else:
             jsonName = self.config["jsonAvailable"].peek()
-            # if self.cache.available(jsonName):
-            #     data = self.cache[jsonName]
-            #     return jsonName, data
-            # else:
-            # data = json.load(open(f"{self.collectionPath()}/{jsonName}.json", "r"))
-            # self.cache.enQueue(jsonName, data)
             return jsonName, self.loadJson(jsonName) 
     def dumpJson(self):
         res = {}
@@ -266,9 +250,7 @@ class CollectionService:
         print(jsonBin)
         if type(jsonBin) == str:
             return jsonBin
-        # list(self.config["tag"][tag].keys())
         for jsonName in jsonBin:
-            # print(jsonName)
             if self.config["allJson"][jsonName] == 0:
                 continue
             cacheID = f"{operator}-{column}-{str(value)}-{str(tags)}-{jsonName}"
@@ -276,24 +258,10 @@ class CollectionService:
             valid = self.whereCache.isValid(cacheID)
             if cached and valid:
                 print(f"Load {cacheID} from cache, Document in cache")
-                # print(self.whereCache[cacheID])
                 cachedData.append(self.whereCache.cacheData[cacheID])
                 continue
             Json = self.loadJson(jsonName)
             buffer.append(pool.apply_async(self.searchThread, [jsonName, Json, operator, column, value, tags]))
-            # t = multiprocessing.Process(target=self.searchThread, args=(Json, res, operator, column, value))
-            # t.start()
-            # threads.append(t)
-            # while len(threads) >= self.config["threadSize"]:
-            #     continue
-                # garbage = []
-                # for threadInd in range(len(threads)):
-                #     if not threads[threadInd].is_alive():
-                #         garbage.append(threadInd)
-                # for threadInd in garbage:
-                #     del threads[threadInd]
-        # for thread in threads:
-        #     thread.join()
         for ticket in buffer:
             result = ticket.get(timeout=10)
             if len(result) != 0:
@@ -310,27 +278,9 @@ class CollectionService:
     def findToDeleteThread(self, Json, DocId, jsonName):
             for Id in Json.keys():
                 if DocId == Id:
-                    # print(f"Found : {Id}")
                     return [jsonName, Id]
             return []
     def deleteDoc(self, docID):
-        # deleteList = []
-        # buffer = []
-        # pool = Pool(processes=self.config["threadSize"])
-        # for jsonName in self.config["allJson"].keys():
-        #     if self.config["allJson"][jsonName] == 0:
-        #         continue
-        #     print(f"Searching in {jsonName}.json")
-        #     Json = self.loadJson(jsonName)
-        #     # threads.append(multiprocessing.Process(target=self.findToDeleteThread, args=(Json, docID, deleteList, jsonName)))
-        #     # threads[-1].start()
-        #     buffer.append(pool.apply_async(self.findToDeleteThread, [Json, docID, jsonName]))
-        # # for thread in threads:
-        # #     thread.join()
-        # for ticket in buffer:
-        #     result = ticket.get(timeout=1)
-        #     if result != None and len(result) != 0:
-        #         deleteList = result
         jsonName = docID.split("_")[1]
         Json = self.loadJson(jsonName)
         if docID not in Json:
@@ -372,7 +322,6 @@ class LogService():
         self.logDB = CollectionService(self, name, repoPath, jsonSize, threadSize=10, CacheLength=1000)
         self.maxAge = maxLogAge
     def push(self, data, Date, tags=[]):
-        #Date format : "day/month/year hour.minute"
         date, time = Date.split(" ")
         d,m,y = date.split("/")
         h,m = time.split(".")
