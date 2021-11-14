@@ -19,4 +19,4 @@ jobs:
         pip install -r requirements.txt
     - name: Run Tests
       run: |
-        python -m src.main
+        python3.10 -m src.main
