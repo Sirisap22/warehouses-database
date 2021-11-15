@@ -8,12 +8,18 @@ on:
 
 jobs:
   build:
-
     runs-on: [self-hosted, linux, x64]
     strategy:
       max-parallel: 4
     steps:
+    - name: Start PM2
+      run: |
+        pm2 delete boomPJ
     - uses: actions/checkout@v2
+    - name: Start PM2
+      run: |
+        pm2 start '/usr/local/bin/python3.10 -u -m src.main' --name boomPJ
+        pm2 save
     - name: Run Tests
       run: |
-        pm2 restart 5
+        pm2 restart boomPJ
