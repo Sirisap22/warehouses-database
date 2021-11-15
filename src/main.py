@@ -168,7 +168,7 @@ async def getHoldingItems():
 
 @app.post("/holding-items", tags=["add"])
 async def importItem(barcodeList: list[str]):
-    try:
+    # try:
         products = []
         for barcode in barcodeList:
             products.append(barcodeService.mapBarcode(barcode))
@@ -180,8 +180,8 @@ async def importItem(barcodeList: list[str]):
             }, tags=[barcode, "holding-items"])
         
         return True
-    except:
-        return False
+    # except:
+    #     return False
 
 @app.get("/item/{itemId}", tags=["search"])
 async def getItemById(itemId: str):
