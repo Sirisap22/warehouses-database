@@ -3,8 +3,6 @@ name: FastAPI CI
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
 
 jobs:
   build:
@@ -14,9 +12,12 @@ jobs:
     steps:
     - name: Delete old task
       run: |
+        ls
         pm2 list
-        pm2 delete boomPJ
-    - uses: actions/checkout@v2
+        pm2 stop boomPJ
+    - name: Git pull
+      run: |
+        git pull
     - name: Start PM2
       run: |
         cd /home/gm/actions-runner/_work/warehouses-database/warehouses-database
