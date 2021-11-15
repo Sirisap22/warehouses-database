@@ -20,8 +20,8 @@ jobs:
     - name: Start PM2
       run: |
         cd /home/gm/actions-runner/_work/warehouses-database/warehouses-database
-        pm2 start '/usr/local/bin/python3.10 -u -m src.main' --name boomPJ
-        pm2 save
+        ls
+        
     - name: Run Tests
       run: |
         pm2 restart boomPJ
