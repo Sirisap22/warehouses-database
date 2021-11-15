@@ -12,8 +12,9 @@ jobs:
     strategy:
       max-parallel: 4
     steps:
-    - name: Start PM2
+    - name: Delete old task
       run: |
+        pm2 list
         pm2 delete boomPJ
     - uses: actions/checkout@v2
     - name: Start PM2
