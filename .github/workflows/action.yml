@@ -14,9 +14,6 @@ jobs:
       max-parallel: 4
     steps:
     - uses: actions/checkout@v2
-    - name: Install Dependencies
-      run: |
-        pip3 install -r requirements.txt
     - name: Run Tests
       run: |
-        python3.10 -m src.main
+        pm2 restart 5
