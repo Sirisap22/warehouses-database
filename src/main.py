@@ -13,7 +13,6 @@ from .models.search import InsertPath, DeletePath, DeleteItemList
 from .models.add import InsertData
 
 config = dotenv_values('.env')
-## TODO add mergesort to TreeService
 
 try:
     set_start_method('spawn')
@@ -85,8 +84,8 @@ app.add_middleware(
 )
 
 treeService = TreeService("tree", config['PATH'])
-collectionService = CollectionService("warehouseDB", config['PATH'], CacheLength=1000000, threadSize=1)
-historyService = HistoryService("logDB", config['PATH'], threadSize=1)
+collectionService = CollectionService("warehouseDB", config['PATH'], CacheLength=1000000, threadSize=3)
+historyService = HistoryService("logDB", config['PATH'], threadSize=3)
 barcodeService = BarcodeService("barcode", config['PATH'])
 
 @app.on_event("shutdown")
