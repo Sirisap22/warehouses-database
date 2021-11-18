@@ -273,7 +273,9 @@ async def getHistory():
         del hisDoc["itemId"]
         del hisDoc["barcode"]
     
-    return hisDocList
+    return {
+        "historyList":hisDocList
+    }
 
 @app.get("/history/search", tags=["history"])
 async def searchHistory(pattern:str="", preDate:str="", postDate:str="", action:str=""):
