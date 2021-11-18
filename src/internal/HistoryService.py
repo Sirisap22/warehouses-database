@@ -19,7 +19,9 @@ class HistoryService(CollectionService):
 
     def getHistory(self, tags={None}):
         docs = super().where("id","#",True,tags=tags)
+        print("[DEBUG] after cache load")
         self.quickSortByDate(0, len(docs)-1, docs)
+        print("[DEBUG] after sort")
         docs.reverse()
         return docs
 
