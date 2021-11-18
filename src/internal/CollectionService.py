@@ -71,6 +71,7 @@ class CollectionService:
         if isExits(f"{repoPath}/{name}", p):
             self.config = json.loads(open(f"{repoPath}/{name}/{p}", "r").read())
             self.config["jsonAvailable"] = Stack(self.config["jsonAvailable"])
+            self.config["threadSize"] = self.threadSize
         else:
             mkdir(repoPath,name)
             self.config = {

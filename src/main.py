@@ -79,7 +79,7 @@ app.add_middleware(
 )
 
 treeService = TreeService("tree", config['PATH'])
-collectionService = CollectionService("warehouseDB", config['PATH'], CacheLength=1000000)
+collectionService = CollectionService("warehouseDB", config['PATH'], CacheLength=1000000, threadSize=1)
 historyService = HistoryService("logDB", config['PATH'])
 barcodeService = BarcodeService("barcode", config['PATH'])
 
@@ -106,16 +106,22 @@ async def getSearch(path: str="", pattern: str=""):
             "location": doc["location"]
         }
         res.append(item)
-    return res
+    return {
+        "searchedResults":res
+    }
     
 
 @app.get("/warehouse", tags=["search"])
 async def getWarehouse():
-    return treeService.getWarehouses()
+    return {
+        "warehouses" :treeService.getWarehouses()
+    }
 
 @app.get("/warehouse/{warehouseName}/zone/{zoneName}", tags=["search"])
 async def getShelfs(warehouseName: str, zoneName: str):
-    return treeService.getShelfs(f"warehouse{warehouseName}/zone{zoneName}")
+    return {
+        "shelfs": treeService.getShelfs(f"warehouse{warehouseName}/zone{zoneName}")
+    }
 
 @app.get("/warehouse/{warehouseName}/zone/{zoneName}/shelf/{shelfName}", tags=["search"])
 async def getItems(warehouseName: str, zoneName: str, shelfName: str):
@@ -131,7 +137,9 @@ async def getItems(warehouseName: str, zoneName: str, shelfName: str):
         res.append(doc)
     
     mergeSortByLocation(res)
-    return res
+    return {
+        "items" :res
+    }
 
 @app.post("/path", tags=["search"])
 async def insertPath(insertPath: InsertPath):
@@ -141,11 +149,15 @@ async def insertPath(insertPath: InsertPath):
         "id": insertPath.name,
     }
 
-    return treeService.insert(NodeType.NON_ITEM, insertPath.path, metaData)
+    return {
+        "isInserted": treeService.insert(NodeType.NON_ITEM, insertPath.path, metaData)
+    }
 
 @app.delete("/path", tags=["search"])
 async def deletePath(deletePath: DeletePath):
-    return treeService.delete(NodeType.NON_ITEM, deletePath.path, deletePath.nameList)
+    return {
+        "isDeleted": treeService.delete(NodeType.NON_ITEM, deletePath.path, deletePath.nameList)
+    }
 
 
 @app.get("/holding-items", tags=["add"])
@@ -164,7 +176,9 @@ async def getHoldingItems():
             "name": itemData
         })
     
-    return processedHoldingItems
+    return {
+        "holdingItems":processedHoldingItems
+    }
 
 @app.post("/holding-items", tags=["add"])
 async def importItem(barcodeList: list[str]):
@@ -179,7 +193,9 @@ async def importItem(barcodeList: list[str]):
                 "date": datetime.now().isoformat()
             }, tags=[barcode, "holding-items"])
         
-        return True
+        return {
+            "isImported": True
+        }
     # except:
     #     return False
 
@@ -227,9 +243,13 @@ async def insertItem(insertData: InsertData):
                 "barcode": doc["barcode"]
             })
         
-            return True
+            return {
+                "IsInserted":True
+            }
         else:
-            return False
+            return {
+               "IsInserted": False
+            }
     # except:
         # return False
 
@@ -259,9 +279,13 @@ async def deleteItem(deleteItemList: DeleteItemList):
 
 
 
-        return True
+        return {
+            "isDeleted":True
+        }
     except:
-        return False
+        return {
+            "isDeleted":False
+        }
 
 @app.get("/history", tags=["history"])
 async def getHistory():
@@ -326,7 +350,9 @@ async def searchHistory(pattern:str="", preDate:str="", postDate:str="", action:
             del doc["barcode"]
             res.append(doc)
     
-    return res
+    return {
+        "searchedResults":res
+    }
         
         
             
