@@ -80,7 +80,7 @@ app.add_middleware(
 
 treeService = TreeService("tree", config['PATH'])
 collectionService = CollectionService("warehouseDB", config['PATH'], CacheLength=1000000, threadSize=1)
-historyService = HistoryService("logDB", config['PATH'])
+historyService = HistoryService("logDB", config['PATH'], threadSize=1)
 barcodeService = BarcodeService("barcode", config['PATH'])
 
 @app.on_event("shutdown")
