@@ -6,6 +6,7 @@ import uvicorn
 import copy
 from datetime import datetime
 from re import search
+from multiprocessing import set_start_method
 
 from .internal import TreeService, NodeType, treeToJSON, MetaData, MetaType, CollectionService, BarcodeService, HistoryService, HistoryAction
 from .models.search import InsertPath, DeletePath, DeleteItemList
@@ -13,6 +14,11 @@ from .models.add import InsertData
 
 config = dotenv_values('.env')
 ## TODO add mergesort to TreeService
+
+try:
+    set_start_method('spawn')
+except RuntimeError:
+    pass
 
 def compareLocation(a, operator, b):
         commands = {
