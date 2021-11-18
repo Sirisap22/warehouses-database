@@ -303,7 +303,7 @@ async def getHistory():
         del hisDoc["barcode"]
     
     return {
-        "historyList":hisDocList
+        "histories":hisDocList
     }
 
 @app.get("/history/search", tags=["history"])
