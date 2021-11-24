@@ -187,22 +187,27 @@ async def getHoldingItems():
 
 @app.post("/holding-items", tags=["add"])
 async def importItem(barcodeList: list[str]):
-    # try:
+    try:
         products = []
         for barcode in barcodeList:
             products.append(barcodeService.mapBarcode(barcode))
 
+        ids = []
         for barcode, product in zip(barcodeList, products):
-            collectionService.addDoc({
+            ids.append(collectionService.addDoc({
                 "barcode": barcode,
                 "date": datetime.now().isoformat()
-            }, tags=[barcode, "holding-items"])
+            }, tags=[barcode, "holding-items"]))
         
         return {
-            "isImported": True
+            "isImported": True, 
+            "productIds": ids
         }
-    # except:
-    #     return False
+    except:
+
+        return {
+            "isImported": False
+        }
 
 @app.get("/item/{itemId}", tags=["search"])
 async def getItemById(itemId: str):
