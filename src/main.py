@@ -213,7 +213,7 @@ async def getItemById(itemId: str):
         **doc
     }
 
-    del res["barcode"]
+    #del res["barcode"]
     del res["tags"]
     del res["tag"]
 
