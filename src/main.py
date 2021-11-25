@@ -301,10 +301,10 @@ async def deleteItem(deleteItemList: DeleteItemList):
 async def getHistory():
     hisDocList = copy.deepcopy(historyService.getHistory())
     for hisDoc in hisDocList:
-        hisDoc["id"] = hisDoc["itemId"]
+        # hisDoc["id"] = hisDoc["itemId"]
 
         del hisDoc["tags"]
-        del hisDoc["itemId"]
+        # del hisDoc["itemId"]
         del hisDoc["barcode"]
     
     return {
