@@ -11,6 +11,7 @@ from multiprocessing import set_start_method
 from .internal import TreeService, NodeType, treeToJSON, MetaData, MetaType, CollectionService, BarcodeService, HistoryService, HistoryAction
 from .models.search import InsertPath, DeletePath, DeleteItemList
 from .models.add import InsertData
+from fastapi.responses import JSONResponse
 
 config = dotenv_values('.env')
 
@@ -103,6 +104,8 @@ async def getSearch(path: str="", pattern: str=""):
     res = []
     for data in itemList:
         doc = collectionService.getDoc(data["id"])
+        if not doc:
+            return JSONResponse(status_code=404, content={"message": f"ID : {data['id']}, Item not found while searching items."})
         item = {
             "id": data["id"],
             "name": data["name"],
@@ -135,7 +138,8 @@ async def getItems(warehouseName: str, zoneName: str, shelfName: str):
     for Id in itemsId:
         ## TODO process doc
         doc = copy.deepcopy(collectionService.getDoc(Id))
-        
+        if not doc:
+            return JSONResponse(status_code=404, content={"message": f"ID : {Id}, Item not found while getting items."})
         doc["name"] = barcodeService.mapBarcode(doc["barcode"])["name"]
         del doc["tags"]
         del doc["barcode"]
@@ -160,15 +164,22 @@ async def insertPath(insertPath: InsertPath):
 
 @app.delete("/path", tags=["search"])
 async def deletePath(deletePath: DeletePath):
-    return {
-        "isDeleted": treeService.delete(NodeType.NON_ITEM, deletePath.path, deletePath.nameList)
-    }
+    isDeleted, statusCode, message = treeService.deleteMultiple(NodeType.NON_ITEM, deletePath.path, deletePath.nameList)
+
+    return JSONResponse(
+        status_code=statusCode, 
+        content={
+            "isDeleted": isDeleted,
+            "message": message
+        })
+
 
 
 @app.get("/holding-items", tags=["add"])
 async def getHoldingItems():
     holdingItems = collectionService.where("id","#",True, tags=["holding-items"])
-
+    if type(holdingItems) == str:
+        return JSONResponse(status_code=404, content={"message": holdingItems})
     itemsData = []
     for holdingItem in holdingItems:
         itemsData.append(barcodeService.mapBarcode(holdingItem['barcode'])['name'])
@@ -212,6 +223,8 @@ async def importItem(barcodeList: list[str]):
 @app.get("/item/{itemId}", tags=["search"])
 async def getItemById(itemId: str):
     doc = collectionService.getDoc(itemId)
+    if not doc:
+        return JSONResponse(status_code=404, content={"message": f"ID : {itemId}, Item not found while getting item."})
     itemData = barcodeService.mapBarcode(doc["barcode"])
     res = {
         **itemData,
@@ -228,6 +241,8 @@ async def getItemById(itemId: str):
 async def insertItem(insertData: InsertData):
     # try:
         doc = collectionService.getDoc(insertData.id)
+        if not doc:
+            return JSONResponse(status_code=404, content={"message": f"ID : {insertData.id}, Item not found while adding item."})
         doc["path"] = insertData.path
         doc["location"] = insertData.location
         doc["date"] = datetime.now().isoformat()
@@ -274,6 +289,8 @@ async def deleteItem(deleteItemList: DeleteItemList):
             collectionService.addTag(id, "OutStorage")
 
             doc = collectionService.getDoc(id)
+            if not doc:
+                return JSONResponse(status_code=404, content={"message": f"ID : {id}, Item not found while deleting."})
             collectionService.updateDoc(id, {
                 **doc,
                 "dateOut": deletedDate

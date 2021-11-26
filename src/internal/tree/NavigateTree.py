@@ -135,13 +135,13 @@ class NavigateTree:
     def deleteFolderNode(self, path: list[str], deleteFolderId: str) -> bool:
         return self.deleteNode(NodeType.NON_ITEM, path, deleteFolderId)
 
-    def deleteMultipleFolderNodeInSameFolderNode(self, path: list[str], deleteFolderIdList: list[str]) -> bool:
-        return self.deleteNode(NodeType.NON_ITEM, path, deleteFolderIdList)
+    def deleteMultipleFolderNodeInSameFolderNode(self, path: list[str], deleteFolderIdList: list[str]) -> tuple[bool, int, str]:
+        return self.deleteMultipleNodeInSameFolderNode(NodeType.NON_ITEM, path, deleteFolderIdList)
 
-    def deleteNode(self, nodeType: NodeType, path: list[str], deleteId: str) -> bool:
+    def deleteNode(self, nodeType: NodeType, path: list[str], deleteId: str) -> tuple[bool, int, str]:
         destinationNode = self.traverse(path)
         if destinationNode is None or not isinstance(destinationNode, FolderNode):
-            return False
+            return (False, 404, 'invalid path')
 
         for d in destinationNode.children.values():
             value = d.data
@@ -159,14 +159,16 @@ class NavigateTree:
                 self.deleteItemsCount(path + [deleteName])
                 del destinationNode.children[deleteName]
 
-                return True
+                return (True, 200, 'successful')
         except KeyError:
-            return False
+            return (False, 404, 'key error')
+        except UnboundLocalError:
+            return (False, 404, 'id(s) not found')
         
     def deleteMultipleNodeInSameFolderNode(self,nodeType: NodeType, path: list[str], deleteIdList: list[str]) -> bool:
         destinationNode = self.traverse(path)
         if destinationNode is None or not isinstance(destinationNode, FolderNode):
-            return False
+            return (False, 404, 'invalid path')
 
         deleteNameList = []
         for d in destinationNode.children.values():
@@ -174,6 +176,9 @@ class NavigateTree:
 
             if value['id'] in deleteIdList:
                 deleteNameList.append(str(value['type']) + value['name'])
+        
+        if len(deleteNameList) == 0:
+            return (False, 404, 'id(s) not found')
 
         try:
             if nodeType == NodeType.ITEM:
@@ -182,11 +187,11 @@ class NavigateTree:
                     del destinationNode.children[deleteId]
 
                 self.updateItemsCount(path, -len(deleteNameList))
-                return True
+                return (True, 200, 'successful')
             elif nodeType == NodeType.NON_ITEM:
                 for deleteName in deleteNameList:
                     if self.itemsCount["/".join(path) + f"/{deleteName}"] > 0:
-                        return False
+                        return (False, 403 , 'cannot delete folder(s) with item(s) in it')
 
                 for deleteName in deleteNameList:
                     self.updateItemsCount(path, -self.itemsCount['/'.join(path + [deleteName])])
@@ -194,6 +199,8 @@ class NavigateTree:
 
                 for deleteName in deleteNameList:
                     del destinationNode.children[deleteName]
-                return True
+                return (True, 200, 'successful')
         except KeyError:
-            return False
+            return (False, 404, 'key error')
+        except UnboundLocalError():
+            return (False, 404, 'id(s) not found (unbound local error)')

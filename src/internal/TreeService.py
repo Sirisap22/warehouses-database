@@ -114,7 +114,7 @@ class TreeService:
         elif type == NodeType.ITEM:
             return self.navigationTree.deleteFileNode(path, deleteName)
 
-    def deleteMultiple(self, type: NodeType, path: str, deleteNameList: list[str]):
+    def deleteMultiple(self, type: NodeType, path: str, deleteNameList: list[str]) -> tuple[bool, int, str]:
         path = path.split("/")
         if type == NodeType.NON_ITEM:
             return self.navigationTree.deleteMultipleFolderNodeInSameFolderNode(path, deleteNameList)

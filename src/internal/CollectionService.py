@@ -235,13 +235,13 @@ class CollectionService:
         return Bin, jsonName
     def where(self, column, operator, value, tags={None}):
         def getJsons(tags):
-            print("---")
+            # print("---")
             if len(set(tags).intersection(set(self.config["tag"]))) != len(tags):
                 return f"Tags {tags} is invalid"
             buffer = set(self.config["tag"][tags[0]])
             for tag in tags[1:]:
                 buffer = buffer.intersection(set(self.config["tag"][tag].keys()))
-            print(f"set : {buffer}, len : {len(buffer)}")
+            # print(f"set : {buffer}, len : {len(buffer)}")
             return buffer
         res = []
         buffer = []
@@ -275,7 +275,12 @@ class CollectionService:
         return res
     def getDoc(self, docID):
         jsonName = docID.split("_")[1]
-        return self.loadJson(jsonName)[docID]
+        if jsonName not in self.config["allJson"].keys():
+            return False
+        doc = self.loadJson(jsonName)
+        if docID not in doc:
+            return False
+        return doc[docID]
     def findToDeleteThread(self, Json, DocId, jsonName):
             for Id in Json.keys():
                 if DocId == Id:
