@@ -108,11 +108,11 @@ class NavigateTree:
         if destinationNode is None or not isinstance(destinationNode, FolderNode):
             return False
 
-        self.updateItemsCount(path, 1)
 
         fileName, type, id = metaData['name'], str(metaData['type']), metaData['id']
         if id not in destinationNode.children.keys():
             destinationNode.children[id] = FileNode(metaData)
+            self.updateItemsCount(path, 1)
             return True
         
         return False
@@ -122,12 +122,13 @@ class NavigateTree:
         if destinationNode is None or not isinstance(destinationNode, FolderNode):
             return False
 
-        self.updateItemsCount(path, len(metaDataList))
 
         for metaData in metaDataList: 
             fileName, type, id = metaData['name'], str(metaData['type']), metaData['id']
             if id in destinationNode.children.keys():
                 return False
+
+        self.updateItemsCount(path, len(metaDataList))
 
         for metaData in metaDataList:
             fileName, type, id = metaData['name'], str(metaData['type']), metaData['id']
