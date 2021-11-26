@@ -8,6 +8,8 @@ from datetime import datetime
 from re import search
 from multiprocessing import set_start_method
 
+from src.models.debug import UpdateItemsCountData
+
 from .internal import TreeService, NodeType, treeToJSON, MetaData, MetaType, CollectionService, BarcodeService, HistoryService, HistoryAction
 from .models.search import InsertPath, DeletePath, DeleteItemList
 from .models.add import InsertData
@@ -382,7 +384,8 @@ async def searchHistory(pattern:str="", preDate:str="", postDate:str="", action:
     }
 
 @app.post('item-count', tags=["temporary"])
-async def updateItemCount(path: str, count: int):
+async def updateItemCount(updateItemsCountData: UpdateItemsCountData):
+    path, count = updateItemsCountData.path, updateItemsCountData.count
     treeService.updateItemsCount(path, count)
     return True
     
