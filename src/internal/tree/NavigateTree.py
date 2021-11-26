@@ -33,7 +33,7 @@ class NavigateTree:
                 else:
                     curPath = '/'.join([curPath, step])
                 self.itemsCount[curPath] += count
-
+            
 
     def deleteItemsCount(self, path: list[str]) -> None:
         path = '/'.join(path)
