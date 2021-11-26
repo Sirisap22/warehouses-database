@@ -381,7 +381,7 @@ async def searchHistory(pattern:str="", preDate:str="", postDate:str="", action:
         "searchedResults":res
     }
 
-@app.update('item-count', tags=["temporary"])
+@app.post('item-count', tags=["temporary"])
 async def updateItemCount(path: str, count: int):
     treeService.updateItemsCount(path, count)
     return True
