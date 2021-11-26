@@ -94,6 +94,7 @@ class TreeService:
             pickle.dump(self.navigationTree, f)
     
     def updateItemsCount(self, path:str, count: int):
+        path = path.split("/")
         self.navigationTree.updateItemsCount(path, count)
 
     def insert(self, type: NodeType, path: str, metaData: MetaData) -> bool:
