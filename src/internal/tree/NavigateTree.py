@@ -111,8 +111,11 @@ class NavigateTree:
         self.updateItemsCount(path, 1)
 
         fileName, type, id = metaData['name'], str(metaData['type']), metaData['id']
-        destinationNode.children[id] = FileNode(metaData)
-        return True
+        if id not in destinationNode.children.keys():
+            destinationNode.children[id] = FileNode(metaData)
+            return True
+        
+        return False
 
     def insertMultipleFileNodeInSameFolderNode(self, path: list[str], metaDataList: list[MetaData]) -> bool:
         destinationNode = self.traverse(path)
@@ -120,6 +123,11 @@ class NavigateTree:
             return False
 
         self.updateItemsCount(path, len(metaDataList))
+
+        for metaData in metaDataList: 
+            fileName, type, id = metaData['name'], str(metaData['type']), metaData['id']
+            if id in destinationNode.children.keys():
+                return False
 
         for metaData in metaDataList:
             fileName, type, id = metaData['name'], str(metaData['type']), metaData['id']
