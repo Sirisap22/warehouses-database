@@ -3,4 +3,7 @@
 .env
 .idea
 **/_tree.cnfg
+**/_barcode.cnfg
 .vscode
+**/logDB
+**/warehouseDB
