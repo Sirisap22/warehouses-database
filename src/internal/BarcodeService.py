@@ -29,7 +29,7 @@ class BarcodeService:
         self.loadBarcode()
     
     def mapBarcode(self, barcode: str) -> dict[str, str]:
-        return self.barcode[barcode[-4:]]
+        return self.barcode[barcode]
 
 
     def saveConfig(self) -> None:
