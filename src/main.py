@@ -12,7 +12,7 @@ from src.models.debug import UpdateItemsCountData
 
 from .internal import TreeService, NodeType, treeToJSON, MetaData, MetaType, CollectionService, BarcodeService, HistoryService, HistoryAction
 from .models.search import InsertPath, DeletePath, DeleteItemList
-from .models.add import InsertData
+from .models.add import InsertData, InsertHoldingItems
 from fastapi.responses import JSONResponse
 
 config = dotenv_values('.env')
@@ -199,7 +199,8 @@ async def getHoldingItems():
     }
 
 @app.post("/holding-items", tags=["add"])
-async def importItem(barcodeList: list[str]):
+async def importItem(insertHoldingItems: InsertHoldingItems):
+    barcodeList = insertHoldingItems.barcodeList
     try:
         products = []
         for barcode in barcodeList:

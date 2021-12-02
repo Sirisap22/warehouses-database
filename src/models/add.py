@@ -9,3 +9,6 @@ class InsertData(BaseModel):
     name: str
     path: str
     location: str
+
+class InsertHoldingItems(BaseModel):
+    barcodeList: list[str]
