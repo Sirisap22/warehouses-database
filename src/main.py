@@ -343,19 +343,19 @@ async def searchHistory(pattern:str="", preDate:str="", postDate:str="", action:
         if len(pattern) > 0:
             for doc in docs:
                 if search(pattern=pattern, string=doc["name"]) is not None:
-                    doc["id"] = doc["itemId"]
+                    # doc["id"] = doc["itemId"]
 
                     del doc["tags"]
-                    del doc["itemId"]
+                    # del doc["itemId"]
                     del doc["barcode"]
                     res.append(doc)
 
         else:
             for doc in docs:
-                doc["id"] = doc["itemId"]
+                # doc["id"] = doc["itemId"]
 
                 del doc["tags"]
-                del doc["itemId"]
+                # del doc["itemId"]
                 del doc["barcode"]
                 res.append(doc)
 
@@ -363,20 +363,20 @@ async def searchHistory(pattern:str="", preDate:str="", postDate:str="", action:
         docs = copy.deepcopy(historyService.getHistory(tags=tags))
         for doc in docs:
             if search(pattern=pattern, string=doc["name"]) is not None:
-                doc["id"] = doc["itemId"]
+                # doc["id"] = doc["itemId"]
 
                 del doc["tags"]
-                del doc["itemId"]
+                # del doc["itemId"]
                 del doc["barcode"]
                 res.append(doc)
 
     elif len(preDate) == 0 and len(postDate) == 0:
         docs = copy.deepcopy(historyService.getHistory(tags=tags))
         for doc in docs:
-            doc["id"] = doc["itemId"]
+            # doc["id"] = doc["itemId"]
 
             del doc["tags"]
-            del doc["itemId"]
+            # del doc["itemId"]
             del doc["barcode"]
             res.append(doc)
     
