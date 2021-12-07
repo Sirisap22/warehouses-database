@@ -181,7 +181,9 @@ async def deletePath(deletePath: DeletePath):
 async def getHoldingItems():
     holdingItems = collectionService.where("id","#",True, tags=["holding-items"])
     if type(holdingItems) == str:
-        return JSONResponse(status_code=404, content={"message": holdingItems})
+        return {
+            "holdingItems": []
+        }
     itemsData = []
     for holdingItem in holdingItems:
         itemsData.append(barcodeService.mapBarcode(holdingItem['barcode'])['name'])
