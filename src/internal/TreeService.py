@@ -86,10 +86,10 @@ class TreeService:
         self.saveObject()
     
     def loadObject(self) -> None:
-        print("TESTSETSETSET", self.objectPath())
+        print(self.objectPath())
         with open(self.objectPath(), "rb") as f:
             self.navigationTree = pickle.load(f)
-        print("TESTSETSET", treeToJSON(self.navigationTree.root))
+        print(treeToJSON(self.navigationTree.root))
 
     def saveObject(self) -> None:
         with open(self.objectPath(), "wb") as f:
