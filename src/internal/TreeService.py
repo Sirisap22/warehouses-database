@@ -90,7 +90,7 @@ class TreeService:
         print(self.objectPath())
         with open(self.objectPath(), "rb") as f:
             self.navigationTree = pickle.load(f)
-        print(treeToJSON(self.navigationTree.root))
+        print(self.navigationTree.itemsCount)
 
     def saveObject(self) -> None:
         with open(self.objectPath(), "wb") as f:
