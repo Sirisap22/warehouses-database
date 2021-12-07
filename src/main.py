@@ -91,9 +91,9 @@ collectionService = CollectionService("warehouseDB", config['PATH'], CacheLength
 historyService = HistoryService("logDB", config['PATH'], threadSize=3)
 barcodeService = BarcodeService("barcode", config['PATH'])
 
-@app.on_event("shutdown")
-def shutdown_event():
-    treeService.saveObject()
+# @app.on_event("shutdown")
+# def shutdown_event():
+#     treeService.saveObject()
 
 @app.get("/", tags=["search"])
 async def getHome():
