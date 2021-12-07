@@ -3,7 +3,7 @@ import pickle
 import json
 from dotenv import dotenv_values
 
-from .tree import NavigateTree, MetaData, MetaType, NodeType
+from .tree import NavigateTree, MetaData, MetaType, NodeType, treeToJSON
 
 
 config = dotenv_values(".env")
@@ -89,7 +89,7 @@ class TreeService:
         print("TESTSETSETSET", self.objectPath())
         with open(self.objectPath(), "rb") as f:
             self.navigationTree = pickle.load(f)
-        print("TESTSETSET", self.navigationTree.root)
+        print("TESTSETSET", treeToJSON(self.navigationTree.root))
 
     def saveObject(self) -> None:
         with open(self.objectPath(), "wb") as f:
