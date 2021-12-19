@@ -46,10 +46,14 @@ class HistoryService(CollectionService):
         startIdx = self.findFirstGreaterOrEqual(docs, startDate)
         endIdx = self.findFirstLessOrEqual(docs, endDate)
 
-        if startIdx == -1:
+
+        if startIdx == -1 or endIdx == -1:
             return []
-        if endIdx == -1 or endIdx + 1 == len(docs):
-            return docs[startIdx:]
+        elif endIdx + 1 == len(docs):
+            res = docs[startIdx:]
+            res.reverse()
+            return res
+
         res = docs[startIdx: endIdx+1]
         res.reverse()
         return res

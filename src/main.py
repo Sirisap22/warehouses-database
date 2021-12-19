@@ -335,8 +335,10 @@ async def getHistory():
 
 @app.get("/history/search", tags=["history"])
 async def searchHistory(pattern:str="", preDate:str="", postDate:str="", action:str=""):
+    print("ENTERRR")
 
     res = []
+    print(len(preDate), len(postDate))
 
     tags = {None} if len(action) == 0 else [action]
 
